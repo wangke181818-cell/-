@@ -2,10 +2,20 @@
 const express = require("express");
 const cors = require("cors");
 const Database = require("better-sqlite3");
+const path = require("path"); // ✅ 新增：用于定位静态页面目录
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// ✅ 前端静态资源 & 根路径（根据你的前端目录改动 "public"）
+const STATIC_DIR = path.join(__dirname, "public");
+
+app.use(express.static(STATIC_DIR));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(STATIC_DIR, "index.html"));
+});
 
 // === 1. 初始化数据库 ===
 const db = new Database("gacha.db");
@@ -89,9 +99,9 @@ db.prepare(`
 // === 2. 默认卡池和概率 ===
 const rarityRates = [
   { rarity: "SSR", rate: 0.05 }, // 5%
-  { rarity: "SR",  rate: 0.20 }, // 20%
-  { rarity: "R",   rate: 0.35 }, // 35%
-  { rarity: "N",   rate: 0.40 }  // 40%
+  { rarity: "SR", rate: 0.20 },  // 20%
+  { rarity: "R", rate: 0.35 },   // 35%
+  { rarity: "N", rate: 0.40 }    // 40%
 ];
 
 // 默认卡池：实用 + 趣味机制
@@ -180,7 +190,6 @@ function drawCardForUser(userId) {
   const pool = getUserCardPool(userId);
   const list = pool[rarity] || [];
   if (list.length === 0) {
-    // 理论上不会发生，但以防万一
     const fallbackList = defaultCardPool[rarity] || defaultCardPool["N"];
     const idx = Math.floor(Math.random() * fallbackList.length);
     return { rarity, text: fallbackList[idx] };
@@ -209,7 +218,6 @@ app.post("/api/login", (req, res) => {
   } else {
     // 老用户，检查密码
     if (!user.password) {
-      // 兼容老数据：第一次输入密码时，给之前的账号设置密码
       db.prepare("UPDATE users SET password = ? WHERE id = ?").run(password, user.id);
       user.password = password;
     } else if (user.password !== password) {
@@ -217,7 +225,6 @@ app.post("/api/login", (req, res) => {
     }
   }
 
-  // 这里只拿一个 partner（老逻辑保留），真正的“多绑定”通过 /api/partners 取
   const couple = db
     .prepare(`SELECT * FROM couples WHERE user_a_id = ? OR user_b_id = ?`)
     .get(user.id, user.id);
@@ -247,10 +254,10 @@ app.post("/api/bind", (req, res) => {
   if (!user) return res.status(404).json({ error: "用户不存在" });
 
   const partner = db.prepare("SELECT * FROM users WHERE name = ?").get(partnerName);
-  if (!partner)
+  if (!partner) {
     return res.status(404).json({ error: "未找到这个昵称的用户（让 TA 先登录一次）" });
+  }
 
-  // 是否已经绑定过这对
   const exists = db
     .prepare(
       `
@@ -273,7 +280,7 @@ app.post("/api/bind", (req, res) => {
   });
 });
 
-// 3.3 查询登录状态 + 抽卡申请列表（老接口，保留）
+// 3.3 查询登录状态 + 抽卡申请列表
 app.get("/api/status", (req, res) => {
   const userId = Number(req.query.userId);
   if (!userId) return res.status(400).json({ error: "缺少 userId" });
@@ -314,7 +321,7 @@ app.get("/api/status", (req, res) => {
   });
 });
 
-// ✅ 3.3 补充：获取所有绑定对象列表（支持多绑定）
+// ✅ 3.3 补充：获取所有绑定对象列表
 app.get("/api/partners", (req, res) => {
   const userId = Number(req.query.userId);
   if (!userId) return res.status(400).json({ error: "缺少 userId" });
@@ -340,7 +347,7 @@ app.get("/api/partners", (req, res) => {
   res.json({ partners: Array.from(partnerMap.values()) });
 });
 
-// 3.4 申请抽卡（仍然用“第一个绑定对象”作为目标对象）
+// 3.4 申请抽卡
 app.post("/api/request-draw", (req, res) => {
   const { userId } = req.body;
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
@@ -388,7 +395,7 @@ app.post("/api/approve-draw", (req, res) => {
   res.json({ message: "已同意对方抽卡" });
 });
 
-// 3.6 抽卡（双方已同意，抽到的卡存入 user_cards）
+// 3.6 抽卡（双方已同意）
 app.post("/api/draw", (req, res) => {
   const { userId } = req.body;
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
@@ -412,13 +419,10 @@ app.post("/api/draw", (req, res) => {
 
   const card = drawCardForUser(user.id);
 
-  // 标记请求已使用
   db.prepare("UPDATE draw_requests SET used = 1 WHERE id = ?").run(request.id);
 
-  // 更新抽卡次数
   db.prepare("UPDATE users SET draw_count = draw_count + 1 WHERE id = ?").run(user.id);
 
-  // 写日志（可选）
   db.prepare(
     `
     INSERT INTO draw_logs (user_id, card_text, rarity, created_at)
@@ -426,7 +430,6 @@ app.post("/api/draw", (req, res) => {
   `
   ).run(user.id, card.text, card.rarity);
 
-  // 存入用户卡牌
   db.prepare(
     `
     INSERT INTO user_cards (user_id, card_text, rarity, used, created_at)
@@ -466,7 +469,7 @@ app.get("/api/cards", (req, res) => {
   res.json({ cards });
 });
 
-// ✅ 3.8 查看绑定对象的卡片
+// 3.8 查看绑定对象的卡片
 app.get("/api/partner-cards", (req, res) => {
   const userId = Number(req.query.userId);
   const partnerId = Number(req.query.partnerId);
@@ -505,7 +508,7 @@ app.get("/api/partner-cards", (req, res) => {
   res.json({ cards });
 });
 
-// 3.9 使用自己的卡片（标记为 used = 1）
+// 3.9 使用自己的卡片
 app.post("/api/use-card", (req, res) => {
   const { userId, cardId } = req.body;
   if (!userId || !cardId) {
@@ -529,7 +532,7 @@ app.post("/api/use-card", (req, res) => {
   res.json({ message: "卡片已标记为已使用" });
 });
 
-// ✅ 3.10 自定义卡：获取自己的自定义卡
+// 3.10 自定义卡：获取自己的自定义卡
 app.get("/api/custom-cards", (req, res) => {
   const userId = Number(req.query.userId);
   if (!userId) return res.status(400).json({ error: "缺少 userId" });
@@ -551,7 +554,7 @@ app.get("/api/custom-cards", (req, res) => {
   res.json({ cards });
 });
 
-// ✅ 3.11 自定义卡：新增
+// 3.11 自定义卡：新增
 app.post("/api/custom-cards/add", (req, res) => {
   const { userId, rarity, text } = req.body;
   if (!userId || !rarity || !text) {
@@ -575,7 +578,7 @@ app.post("/api/custom-cards/add", (req, res) => {
   res.json({ message: "已添加自定义卡" });
 });
 
-// ✅ 3.12 自定义卡：删除（软删除）
+// 3.12 自定义卡：删除（软删除）
 app.post("/api/custom-cards/delete", (req, res) => {
   const { userId, cardId } = req.body;
   if (!userId || !cardId) {
