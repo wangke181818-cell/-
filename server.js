@@ -1,4 +1,3 @@
-// server.js
 const express = require("express");
 const cors = require("cors");
 const Database = require("better-sqlite3");
@@ -14,6 +13,25 @@ app.use(express.static(STATIC_DIR));
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(STATIC_DIR, "index.html"));
+});
+
+/**
+ * === App 更新接口（给 Android 用）===
+ * 你只要每次发新版 apk 的时候，手动改这里三项：
+ * - versionCode：整数，递增即可（1,2,3...）
+ * - versionName：展示给用户看的版本号
+ * - apkUrl：你的 apk 直链（GitHub Release / 网盘直链 / Render 静态文件都行）
+ */
+const updateInfo = {
+  versionCode: 1, // 当前最新版本的 versionCode（要比 Android 工程里的大才能触发更新）
+  versionName: "1.0.0",
+  apkUrl: "https://your-domain.com/path/to/your-apk.apk",
+  changelog: "首次发布版本"
+};
+
+// Android 访问这个地址获取更新信息： https://你的render域名/update.json
+app.get("/update.json", (req, res) => {
+  res.json(updateInfo);
 });
 
 // === 1. 初始化数据库 ===
