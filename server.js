@@ -113,6 +113,17 @@ db.prepare(`
   )
 `).run();
 
+// 新增：用户对系统默认卡的隐藏记录（只对当前用户生效）
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS disabled_default_cards (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    rarity TEXT NOT NULL,
+    text TEXT NOT NULL,
+    UNIQUE(user_id, rarity, text)
+  )
+`).run();
+
 // === 2. 默认卡池和概率 ===
 const rarityRates = [
   { rarity: "SSR", rate: 0.05 }, // 5%
@@ -188,6 +199,7 @@ function rollRarity() {
 }
 
 // 获取某用户的完整卡池（默认卡 + 该用户 & 所有绑定对象的自定义卡）
+// 注意：这里已经把“用户隐藏的默认卡”过滤掉了
 function getUserCardPool(userId) {
   const pool = {};
   const rarities = Object.keys(defaultCardPool);
@@ -202,8 +214,18 @@ function getUserCardPool(userId) {
   // 把自己也加进去
   partners.push(userId);
 
+  // 查出用户隐藏的默认卡
+  const disabledRows = db.prepare(`
+    SELECT rarity, text
+    FROM disabled_default_cards
+    WHERE user_id = ?
+  `).all(userId);
+  const disabledSet = new Set(disabledRows.map(r => `${r.rarity}||${r.text}`));
+
   for (const rarity of rarities) {
-    const base = defaultCardPool[rarity] ? defaultCardPool[rarity].slice() : [];
+    const baseAll = defaultCardPool[rarity] ? defaultCardPool[rarity].slice() : [];
+    // 过滤掉用户隐藏的部分
+    const base = baseAll.filter(text => !disabledSet.has(`${rarity}||${text}`));
 
     let customList = [];
     for (const pid of partners) {
@@ -633,7 +655,7 @@ app.post("/api/custom-cards/delete", (req, res) => {
   res.json({ message: "已删除自定义卡（不会再被抽到）" });
 });
 
-// 3.13 查看当前卡库（默认卡 + 绑定双方自定义卡）
+// 3.13 查看当前卡库（默认卡 + 绑定双方自定义卡 + 标记哪些是默认卡/自定义卡/已隐藏）
 app.get("/api/card-pool", (req, res) => {
   const userId = Number(req.query.userId);
   if (!userId) {
@@ -645,8 +667,120 @@ app.get("/api/card-pool", (req, res) => {
     return res.status(404).json({ error: "用户不存在" });
   }
 
-  const pool = getUserCardPool(userId);
+  const rarities = Object.keys(defaultCardPool);
+
+  // 找出所有绑定对象
+  const couples = db
+    .prepare(`SELECT * FROM couples WHERE user_a_id = ? OR user_b_id = ?`)
+    .all(userId, userId);
+  const partnerIds = [];
+  for (const c of couples) {
+    const pid = c.user_a_id === userId ? c.user_b_id : c.user_a_id;
+    if (!partnerIds.includes(pid)) partnerIds.push(pid);
+  }
+
+  // 用户隐藏的系统默认卡
+  const disabledRows = db.prepare(`
+    SELECT rarity, text
+    FROM disabled_default_cards
+    WHERE user_id = ?
+  `).all(userId);
+  const disabledSet = new Set(disabledRows.map(r => `${r.rarity}||${r.text}`));
+
+  const pool = {};
+
+  // 系统默认卡
+  for (const rarity of rarities) {
+    pool[rarity] = [];
+    const baseList = defaultCardPool[rarity] || [];
+    for (const text of baseList) {
+      pool[rarity].push({
+        type: "default",
+        rarity,
+        text,
+        disabled: disabledSet.has(`${rarity}||${text}`)
+      });
+    }
+  }
+
+  // 自定义卡（自己 + 绑定对象）
+  const allOwnerIds = [userId, ...partnerIds];
+  if (allOwnerIds.length) {
+    const placeholders = allOwnerIds.map(() => "?").join(",");
+    const rows = db.prepare(`
+      SELECT c.id, c.user_id, c.rarity, c.text, c.enabled,
+             u.name AS owner_name
+      FROM custom_cards c
+      JOIN users u ON c.user_id = u.id
+      WHERE c.user_id IN (${placeholders})
+      ORDER BY c.rarity ASC, c.id DESC
+    `).all(...allOwnerIds);
+
+    for (const c of rows) {
+      if (!pool[c.rarity]) pool[c.rarity] = [];
+      pool[c.rarity].push({
+        type: "custom",
+        id: c.id,
+        owner_id: c.user_id,
+        owner_name: c.owner_name,
+        rarity: c.rarity,
+        text: c.text,
+        enabled: !!c.enabled,
+        is_self: c.user_id === userId
+      });
+    }
+  }
+
   res.json({ pool });
+});
+
+// 3.14 隐藏一张系统默认卡（对当前用户生效）
+app.post("/api/default-cards/disable", (req, res) => {
+  const { userId, rarity, text } = req.body;
+  if (!userId || !rarity || !text) {
+    return res.status(400).json({ error: "缺少参数" });
+  }
+  const allowed = ["SSR", "SR", "R", "N"];
+  if (!allowed.includes(rarity)) {
+    return res.status(400).json({ error: "rarity 必须是 SSR/SR/R/N 之一" });
+  }
+
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+  if (!user) return res.status(404).json({ error: "用户不存在" });
+
+  const base = defaultCardPool[rarity] || [];
+  if (!base.includes(text)) {
+    return res.status(400).json({ error: "只能隐藏系统默认卡" });
+  }
+
+  db.prepare(
+    `
+    INSERT OR IGNORE INTO disabled_default_cards (user_id, rarity, text)
+    VALUES (?, ?, ?)
+  `
+  ).run(userId, rarity, text);
+
+  res.json({ message: "已从你的卡池中隐藏该默认卡" });
+});
+
+// 3.15 恢复一张系统默认卡（对当前用户生效）
+app.post("/api/default-cards/enable", (req, res) => {
+  const { userId, rarity, text } = req.body;
+  if (!userId || !rarity || !text) {
+    return res.status(400).json({ error: "缺少参数" });
+  }
+
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+  if (!user) return res.status(404).json({ error: "用户不存在" });
+
+  db.prepare(
+    `
+    DELETE FROM disabled_default_cards
+    WHERE user_id = ? AND rarity = ? AND text = ?
+  `
+  ).run(userId, rarity, text);
+
+  res.json({ message: "已恢复该默认卡" });
 });
 
 // === 4. 启动服务器（兼容 Render） ===
