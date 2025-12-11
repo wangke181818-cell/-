@@ -19,7 +19,19 @@ db.prepare(`
   )
 `).run();
 
-// 情侣绑定表
+// 给 users 表补上 password 字段（如果不存在）
+try {
+  const cols = db.prepare("PRAGMA table_info(users)").all();
+  const hasPassword = cols.some((c) => c.name === "password");
+  if (!hasPassword) {
+    db.prepare("ALTER TABLE users ADD COLUMN password TEXT").run();
+    console.log("Added password column to users table");
+  }
+} catch (e) {
+  console.error("Check/Add password column failed:", e);
+}
+
+// 情侣绑定表（一个人可以绑定多个人）
 db.prepare(`
   CREATE TABLE IF NOT EXISTS couples (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,7 +63,7 @@ db.prepare(`
   )
 `).run();
 
-// ✅ 用户卡牌表：记录每个人抽到的每一张卡、是否使用
+// 用户抽到的卡
 db.prepare(`
   CREATE TABLE IF NOT EXISTS user_cards (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,7 +75,18 @@ db.prepare(`
   )
 `).run();
 
-// === 2. 卡池和概率（完整版本） ===
+// 用户自定义卡池：在默认卡基础上增加自己的卡
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS custom_cards (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    rarity TEXT NOT NULL,
+    text TEXT NOT NULL,
+    enabled INTEGER NOT NULL DEFAULT 1
+  )
+`).run();
+
+// === 2. 默认卡池和概率 ===
 const rarityRates = [
   { rarity: "SSR", rate: 0.05 }, // 5%
   { rarity: "SR",  rate: 0.20 }, // 20%
@@ -71,8 +94,8 @@ const rarityRates = [
   { rarity: "N",   rate: 0.40 }  // 40%
 ];
 
-// 全部卡池：实用 + 趣味机制
-const cardPool = {
+// 默认卡池：实用 + 趣味机制
+const defaultCardPool = {
   SSR: [
     "小心愿卡：下次见面你提出一个“小心愿”，我在合理范围内无条件帮你实现",
     "解决烦心事卡：你最近最烦的一件小事，我帮你搞定（如资料打印、买东西、打电话咨询等）",
@@ -137,36 +160,74 @@ function rollRarity() {
   return "N";
 }
 
-function drawCard() {
+// 获取某用户的完整卡池（默认卡 + 该用户自定义卡）
+function getUserCardPool(userId) {
+  const pool = {};
+  const rarities = Object.keys(defaultCardPool);
+  for (const rarity of rarities) {
+    const base = defaultCardPool[rarity] ? defaultCardPool[rarity].slice() : [];
+    const customRows = db
+      .prepare(`SELECT text FROM custom_cards WHERE user_id = ? AND rarity = ? AND enabled = 1`)
+      .all(userId, rarity);
+    const customTexts = customRows.map((r) => r.text);
+    pool[rarity] = base.concat(customTexts);
+  }
+  return pool;
+}
+
+function drawCardForUser(userId) {
   const rarity = rollRarity();
-  const list = cardPool[rarity];
+  const pool = getUserCardPool(userId);
+  const list = pool[rarity] || [];
+  if (list.length === 0) {
+    // 理论上不会发生，但以防万一
+    const fallbackList = defaultCardPool[rarity] || defaultCardPool["N"];
+    const idx = Math.floor(Math.random() * fallbackList.length);
+    return { rarity, text: fallbackList[idx] };
+  }
   const index = Math.floor(Math.random() * list.length);
   return { rarity, text: list[index] };
 }
 
 // === 3. 接口 ===
 
-// 3.1 登录 / 注册
+// 3.1 登录 / 注册（带密码）
 app.post("/api/login", (req, res) => {
-  const { name } = req.body;
-  if (!name || typeof name !== "string") {
-    return res.status(400).json({ error: "name 必须是字符串" });
+  const { name, password } = req.body;
+  if (!name || typeof name !== "string" || !password || typeof password !== "string") {
+    return res.status(400).json({ error: "name 和 password 必须是字符串" });
   }
 
   let user = db.prepare("SELECT * FROM users WHERE name = ?").get(name);
+
   if (!user) {
-    const info = db.prepare("INSERT INTO users (name) VALUES (?)").run(name);
+    // 注册新用户
+    const info = db
+      .prepare("INSERT INTO users (name, password) VALUES (?, ?)")
+      .run(name, password);
     user = db.prepare("SELECT * FROM users WHERE id = ?").get(info.lastInsertRowid);
+  } else {
+    // 老用户，检查密码
+    if (!user.password) {
+      // 兼容老数据：第一次输入密码时，给之前的账号设置密码
+      db.prepare("UPDATE users SET password = ? WHERE id = ?").run(password, user.id);
+      user.password = password;
+    } else if (user.password !== password) {
+      return res.status(400).json({ error: "密码错误" });
+    }
   }
 
-  const couple = db.prepare(`
-    SELECT * FROM couples WHERE user_a_id = ? OR user_b_id = ?
-  `).get(user.id, user.id);
+  // 这里只拿一个 partner（老逻辑保留），真正的“多绑定”通过 /api/partners 取
+  const couple = db
+    .prepare(`SELECT * FROM couples WHERE user_a_id = ? OR user_b_id = ?`)
+    .get(user.id, user.id);
 
   let partner = null;
   if (couple) {
     const partnerId = couple.user_a_id === user.id ? couple.user_b_id : couple.user_a_id;
-    partner = db.prepare("SELECT id, name, draw_count FROM users WHERE id = ?").get(partnerId);
+    partner = db
+      .prepare("SELECT id, name, draw_count FROM users WHERE id = ?")
+      .get(partnerId);
   }
 
   res.json({
@@ -175,7 +236,7 @@ app.post("/api/login", (req, res) => {
   });
 });
 
-// 3.2 绑定另一半
+// 3.2 绑定另一半（一个人可以多次绑定不同的人）
 app.post("/api/bind", (req, res) => {
   const { userId, partnerName } = req.body;
   if (!userId || !partnerName) {
@@ -186,26 +247,33 @@ app.post("/api/bind", (req, res) => {
   if (!user) return res.status(404).json({ error: "用户不存在" });
 
   const partner = db.prepare("SELECT * FROM users WHERE name = ?").get(partnerName);
-  if (!partner) return res.status(404).json({ error: "未找到这个昵称的用户（让 TA 先登录一次）" });
+  if (!partner)
+    return res.status(404).json({ error: "未找到这个昵称的用户（让 TA 先登录一次）" });
 
-  const exists = db.prepare(`
+  // 是否已经绑定过这对
+  const exists = db
+    .prepare(
+      `
     SELECT * FROM couples 
     WHERE (user_a_id = ? AND user_b_id = ?) OR (user_a_id = ? AND user_b_id = ?)
-  `).get(user.id, partner.id, partner.id, user.id);
+  `
+    )
+    .get(user.id, partner.id, partner.id, user.id);
 
-  if (exists) {
-    return res.json({ message: "已经绑定过了", partner: { id: partner.id, name: partner.name, draw_count: partner.draw_count } });
+  if (!exists) {
+    db.prepare("INSERT INTO couples (user_a_id, user_b_id) VALUES (?, ?)").run(
+      user.id,
+      partner.id
+    );
   }
 
-  db.prepare("INSERT INTO couples (user_a_id, user_b_id) VALUES (?, ?)").run(user.id, partner.id);
-
-  return res.json({ 
-    message: "绑定成功！", 
+  return res.json({
+    message: exists ? "已经绑定过了" : "绑定成功！",
     partner: { id: partner.id, name: partner.name, draw_count: partner.draw_count }
   });
 });
 
-// 3.3 查询状态 + 抽卡申请列表
+// 3.3 查询登录状态 + 抽卡申请列表（老接口，保留）
 app.get("/api/status", (req, res) => {
   const userId = Number(req.query.userId);
   if (!userId) return res.status(400).json({ error: "缺少 userId" });
@@ -213,17 +281,21 @@ app.get("/api/status", (req, res) => {
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
   if (!user) return res.status(404).json({ error: "用户不存在" });
 
-  const couple = db.prepare(`
-    SELECT * FROM couples WHERE user_a_id = ? OR user_b_id = ?
-  `).get(user.id, user.id);
+  const couple = db
+    .prepare(`SELECT * FROM couples WHERE user_a_id = ? OR user_b_id = ?`)
+    .get(user.id, user.id);
 
   let partner = null;
   if (couple) {
     const partnerId = couple.user_a_id === user.id ? couple.user_b_id : couple.user_a_id;
-    partner = db.prepare("SELECT id, name, draw_count FROM users WHERE id = ?").get(partnerId);
+    partner = db
+      .prepare("SELECT id, name, draw_count FROM users WHERE id = ?")
+      .get(partnerId);
   }
 
-  const requests = db.prepare(`
+  const requests = db
+    .prepare(
+      `
     SELECT dr.*, u1.name AS requester_name, u2.name AS partner_name
     FROM draw_requests dr
     JOIN users u1 ON dr.requester_id = u1.id
@@ -231,7 +303,9 @@ app.get("/api/status", (req, res) => {
     WHERE requester_id = ? OR partner_id = ?
     ORDER BY dr.id DESC
     LIMIT 20
-  `).all(user.id, user.id);
+  `
+    )
+    .all(user.id, user.id);
 
   res.json({
     user: { id: user.id, name: user.name, draw_count: user.draw_count },
@@ -240,23 +314,53 @@ app.get("/api/status", (req, res) => {
   });
 });
 
-// 3.4 申请抽卡
+// ✅ 3.3 补充：获取所有绑定对象列表（支持多绑定）
+app.get("/api/partners", (req, res) => {
+  const userId = Number(req.query.userId);
+  if (!userId) return res.status(400).json({ error: "缺少 userId" });
+
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+  if (!user) return res.status(404).json({ error: "用户不存在" });
+
+  const couples = db
+    .prepare(`SELECT * FROM couples WHERE user_a_id = ? OR user_b_id = ?`)
+    .all(user.id, user.id);
+
+  const partnerMap = new Map();
+  for (const c of couples) {
+    const pid = c.user_a_id === user.id ? c.user_b_id : c.user_a_id;
+    if (!partnerMap.has(pid)) {
+      const p = db
+        .prepare("SELECT id, name, draw_count FROM users WHERE id = ?")
+        .get(pid);
+      if (p) partnerMap.set(pid, p);
+    }
+  }
+
+  res.json({ partners: Array.from(partnerMap.values()) });
+});
+
+// 3.4 申请抽卡（仍然用“第一个绑定对象”作为目标对象）
 app.post("/api/request-draw", (req, res) => {
   const { userId } = req.body;
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
   if (!user) return res.status(404).json({ error: "用户不存在" });
 
-  const couple = db.prepare(`
-    SELECT * FROM couples WHERE user_a_id = ? OR user_b_id = ?
-  `).get(user.id, user.id);
-  if (!couple) return res.status(400).json({ error: "你还没有绑定另一半" });
+  const couple = db
+    .prepare(`SELECT * FROM couples WHERE user_a_id = ? OR user_b_id = ?`)
+    .get(user.id, user.id);
+  if (!couple) return res.status(400).json({ error: "你还没有绑定任何人" });
 
   const partnerId = couple.user_a_id === user.id ? couple.user_b_id : couple.user_a_id;
 
-  const info = db.prepare(`
+  const info = db
+    .prepare(
+      `
     INSERT INTO draw_requests (requester_id, partner_id, requester_confirmed, partner_confirmed, used)
     VALUES (?, ?, 1, 0, 0)
-  `).run(user.id, partnerId);
+  `
+    )
+    .run(user.id, partnerId);
 
   res.json({ message: "已发出抽卡申请，等待对方同意", requestId: info.lastInsertRowid });
 });
@@ -277,30 +381,36 @@ app.post("/api/approve-draw", (req, res) => {
     return res.status(400).json({ error: "这个请求已经被使用过了" });
   }
 
-  db.prepare(`
-    UPDATE draw_requests SET partner_confirmed = 1 WHERE id = ?
-  `).run(requestId);
+  db.prepare(`UPDATE draw_requests SET partner_confirmed = 1 WHERE id = ?`).run(
+    requestId
+  );
 
   res.json({ message: "已同意对方抽卡" });
 });
 
-// 3.6 抽卡（双方已同意）
+// 3.6 抽卡（双方已同意，抽到的卡存入 user_cards）
 app.post("/api/draw", (req, res) => {
   const { userId } = req.body;
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
   if (!user) return res.status(404).json({ error: "用户不存在" });
 
-  const request = db.prepare(`
+  const request = db
+    .prepare(
+      `
     SELECT * FROM draw_requests
     WHERE requester_id = ? AND requester_confirmed = 1 AND partner_confirmed = 1 AND used = 0
     ORDER BY id ASC
-  `).get(user.id);
+  `
+    )
+    .get(user.id);
 
   if (!request) {
-    return res.status(400).json({ error: "没有可用的已同意的抽卡请求，请先申请并让对方同意" });
+    return res
+      .status(400)
+      .json({ error: "没有可用的已同意的抽卡请求，请先申请并让对方同意" });
   }
 
-  const card = drawCard();
+  const card = drawCardForUser(user.id);
 
   // 标记请求已使用
   db.prepare("UPDATE draw_requests SET used = 1 WHERE id = ?").run(request.id);
@@ -309,16 +419,20 @@ app.post("/api/draw", (req, res) => {
   db.prepare("UPDATE users SET draw_count = draw_count + 1 WHERE id = ?").run(user.id);
 
   // 写日志（可选）
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO draw_logs (user_id, card_text, rarity, created_at)
     VALUES (?, ?, ?, datetime('now'))
-  `).run(user.id, card.text, card.rarity);
+  `
+  ).run(user.id, card.text, card.rarity);
 
-  // ✅ 把卡存入 user_cards（used = 0，表示还没使用）
-  db.prepare(`
+  // 存入用户卡牌
+  db.prepare(
+    `
     INSERT INTO user_cards (user_id, card_text, rarity, used, created_at)
     VALUES (?, ?, ?, 0, datetime('now'))
-  `).run(user.id, card.text, card.rarity);
+  `
+  ).run(user.id, card.text, card.rarity);
 
   const updatedUser = db.prepare("SELECT * FROM users WHERE id = ?").get(user.id);
 
@@ -329,7 +443,7 @@ app.post("/api/draw", (req, res) => {
   });
 });
 
-// 3.7 查询某用户所有卡片
+// 3.7 查询自己的卡片
 app.get("/api/cards", (req, res) => {
   const userId = Number(req.query.userId);
   if (!userId) {
@@ -338,26 +452,69 @@ app.get("/api/cards", (req, res) => {
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
   if (!user) return res.status(404).json({ error: "用户不存在" });
 
-  const cards = db.prepare(`
+  const cards = db
+    .prepare(
+      `
     SELECT id, user_id, card_text, rarity, used, created_at
     FROM user_cards
     WHERE user_id = ?
     ORDER BY used ASC, created_at DESC, id DESC
-  `).all(userId);
+  `
+    )
+    .all(userId);
 
   res.json({ cards });
 });
 
-// 3.8 使用卡片（标记为 used = 1）
+// ✅ 3.8 查看绑定对象的卡片
+app.get("/api/partner-cards", (req, res) => {
+  const userId = Number(req.query.userId);
+  const partnerId = Number(req.query.partnerId);
+  if (!userId || !partnerId) {
+    return res.status(400).json({ error: "缺少 userId 或 partnerId" });
+  }
+
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+  const partner = db.prepare("SELECT * FROM users WHERE id = ?").get(partnerId);
+  if (!user || !partner) return res.status(404).json({ error: "用户不存在" });
+
+  const couple = db
+    .prepare(
+      `
+    SELECT * FROM couples 
+    WHERE (user_a_id = ? AND user_b_id = ?) OR (user_a_id = ? AND user_b_id = ?)
+  `
+    )
+    .get(userId, partnerId, partnerId, userId);
+
+  if (!couple) {
+    return res.status(403).json({ error: "你们还没有绑定，不能查看对方卡片" });
+  }
+
+  const cards = db
+    .prepare(
+      `
+    SELECT id, user_id, card_text, rarity, used, created_at
+    FROM user_cards
+    WHERE user_id = ?
+    ORDER BY used ASC, created_at DESC, id DESC
+  `
+    )
+    .all(partnerId);
+
+  res.json({ cards });
+});
+
+// 3.9 使用自己的卡片（标记为 used = 1）
 app.post("/api/use-card", (req, res) => {
   const { userId, cardId } = req.body;
   if (!userId || !cardId) {
     return res.status(400).json({ error: "缺少参数" });
   }
 
-  const card = db.prepare(`
-    SELECT * FROM user_cards WHERE id = ? AND user_id = ?
-  `).get(cardId, userId);
+  const card = db
+    .prepare(`SELECT * FROM user_cards WHERE id = ? AND user_id = ?`)
+    .get(cardId, userId);
 
   if (!card) {
     return res.status(404).json({ error: "找不到这张卡，或这张卡不属于你" });
@@ -367,11 +524,75 @@ app.post("/api/use-card", (req, res) => {
     return res.status(400).json({ error: "这张卡已经使用过了" });
   }
 
-  db.prepare(`
-    UPDATE user_cards SET used = 1 WHERE id = ?
-  `).run(cardId);
+  db.prepare(`UPDATE user_cards SET used = 1 WHERE id = ?`).run(cardId);
 
   res.json({ message: "卡片已标记为已使用" });
+});
+
+// ✅ 3.10 自定义卡：获取自己的自定义卡
+app.get("/api/custom-cards", (req, res) => {
+  const userId = Number(req.query.userId);
+  if (!userId) return res.status(400).json({ error: "缺少 userId" });
+
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+  if (!user) return res.status(404).json({ error: "用户不存在" });
+
+  const cards = db
+    .prepare(
+      `
+    SELECT id, rarity, text, enabled
+    FROM custom_cards
+    WHERE user_id = ?
+    ORDER BY rarity ASC, id DESC
+  `
+    )
+    .all(userId);
+
+  res.json({ cards });
+});
+
+// ✅ 3.11 自定义卡：新增
+app.post("/api/custom-cards/add", (req, res) => {
+  const { userId, rarity, text } = req.body;
+  if (!userId || !rarity || !text) {
+    return res.status(400).json({ error: "缺少参数" });
+  }
+  const allowed = ["SSR", "SR", "R", "N"];
+  if (!allowed.includes(rarity)) {
+    return res.status(400).json({ error: "rarity 必须是 SSR/SR/R/N 之一" });
+  }
+
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+  if (!user) return res.status(404).json({ error: "用户不存在" });
+
+  db.prepare(
+    `
+    INSERT INTO custom_cards (user_id, rarity, text, enabled)
+    VALUES (?, ?, ?, 1)
+  `
+  ).run(userId, rarity, text);
+
+  res.json({ message: "已添加自定义卡" });
+});
+
+// ✅ 3.12 自定义卡：删除（软删除）
+app.post("/api/custom-cards/delete", (req, res) => {
+  const { userId, cardId } = req.body;
+  if (!userId || !cardId) {
+    return res.status(400).json({ error: "缺少参数" });
+  }
+
+  const card = db
+    .prepare(`SELECT * FROM custom_cards WHERE id = ? AND user_id = ?`)
+    .get(cardId, userId);
+
+  if (!card) {
+    return res.status(404).json({ error: "找不到这张自定义卡，或这张卡不属于你" });
+  }
+
+  db.prepare(`UPDATE custom_cards SET enabled = 0 WHERE id = ?`).run(cardId);
+
+  res.json({ message: "已删除自定义卡（不会再被抽到）" });
 });
 
 // === 4. 启动服务器（兼容 Render） ===
