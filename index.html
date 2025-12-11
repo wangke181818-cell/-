@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>实用抽卡器</title>
+  <title>研究生情侣实用抽卡器 · 记录卡片使用状态</title>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -20,7 +20,7 @@
       background: #020617;
       border-radius: 16px;
       padding: 20px;
-      max-width: 1100px;
+      max-width: 1200px;
       width: 100%;
       box-shadow: 0 20px 55px rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(148, 163, 184, 0.4);
@@ -126,18 +126,19 @@
 
     .main {
       display: grid;
-      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.5fr);
-      gap: 20px;
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.8fr);
+      gap: 18px;
     }
 
-    @media (max-width: 860px) {
+    @media (max-width: 900px) {
       .main {
         grid-template-columns: 1fr;
       }
     }
 
-    .current-draw {
-      background: radial-gradient(circle at top, rgba(56, 189, 248, 0.16), transparent 60%);
+    .current-draw,
+    .my-cards {
+      background: radial-gradient(circle at top, rgba(56, 189, 248, 0.12), transparent 60%);
       border-radius: 14px;
       padding: 14px;
       border: 1px solid rgba(148, 163, 184, 0.35);
@@ -150,7 +151,7 @@
       color: #cbd5f5;
     }
 
-    .card-list {
+    .card-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
       gap: 10px;
@@ -177,6 +178,17 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       opacity: 0.9;
+    }
+
+    .card-meta {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
+
+    .card-used {
+      opacity: 0.45;
+      text-decoration: line-through;
     }
 
     .rarity-SSR {
@@ -245,14 +257,11 @@
     .history-rarity-R   { color: #7dd3fc; }
     .history-rarity-N   { color: #9ca3af; }
 
-    .status-ok { color: #4ade80; }
-    .status-bad { color: #f97373; }
-
     .requests-list {
       margin-top: 6px;
       border-top: 1px dashed rgba(75, 85, 99, 0.9);
       padding-top: 4px;
-      max-height: 120px;
+      max-height: 130px;
       overflow-y: auto;
     }
 
@@ -288,16 +297,26 @@
       z-index: 999;
       display: none;
     }
+
+    .tag-used {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.8);
+      font-size: 10px;
+      color: #9ca3af;
+      margin-left: 4px;
+    }
   </style>
 </head>
 <body>
   <div class="gacha-container">
     <div class="header">
       <div>
-        <div class="title">研究生情侣实用抽卡器 · 后端版</div>
+        <div class="title">研究生情侣实用抽卡器 · 云后端版</div>
         <div class="subtitle">
-          · 使用后端记录账号与抽卡次数 · 双方绑定并同意后才可抽卡<br/>
-          · 卡牌内容在 <code>server.js</code> 的 <code>cardPool</code> 中配置
+          · 记录每次抽卡 · 每张卡单独存档 · 使用后变为失效<br />
+          · 抽卡前需要双方绑定并同意
         </div>
       </div>
 
@@ -315,7 +334,7 @@
 
         <div class="login-row">
           <span>绑定另一半昵称：</span>
-          <input type="text" id="input-partner" placeholder="对方也要先登录一次" />
+          <input type="text" id="input-partner" placeholder="对方要先登录一次" />
           <button id="btn-bind" class="btn-secondary">绑定</button>
         </div>
 
@@ -325,51 +344,60 @@
         </div>
 
         <div class="info-line" style="margin-top:4px;">
-          抽卡流程：① 你登录并绑定对方 → ② 你点“申请我抽卡” → ③ 对方登录并在下方点击“同意抽卡” → ④ 你再点“抽卡”。
+          流程：你申请 → 对方在自己的账号里同意 → 你才可以抽卡。
         </div>
 
-        <div class="requests-list" id="requests-list">
-          <!-- 抽卡请求列表 -->
-        </div>
+        <div class="requests-list" id="requests-list"></div>
       </div>
     </div>
 
     <div class="controls">
       <button id="btn-draw">抽卡（需双方同意）</button>
-      <button id="btn-clear-history" class="btn-secondary">清空历史</button>
+      <button id="btn-clear-history" class="btn-secondary">清空本地历史</button>
       <div class="prob-text">
-        抽卡由后端判定，次数也由后端记录。若提示“没有已同意的抽卡请求”，说明对方还没在自己账号里点“同意”。
+        抽卡逻辑与卡片记录都在后端。使用卡片后，该卡会标记为“已使用”，不能再用。
       </div>
     </div>
 
     <div class="main">
-      <div class="current-draw">
-        <div class="section-title">本次抽到的卡：</div>
-        <div id="card-container" class="card-list">
-          <div style="font-size: 13px; color:#6b7280;">请先登录并完成绑定与同意流程，再点击“抽卡”。</div>
+      <div>
+        <div class="current-draw">
+          <div class="section-title">本次抽到的卡：</div>
+          <div id="card-container" class="card-grid">
+            <div style="font-size: 13px; color:#6b7280;">请先登录并完成申请 / 同意流程，再点击“抽卡”。</div>
+          </div>
+        </div>
+
+        <div class="my-cards" style="margin-top:14px;">
+          <div class="section-title">我的卡牌（从后端读取，可使用/失效）：</div>
+          <div id="my-cards-container" class="card-grid">
+            <div style="font-size: 13px; color:#6b7280;">登录后会显示你抽到的所有卡。</div>
+          </div>
         </div>
       </div>
 
       <div class="history">
-        <div class="history-title">本地抽卡历史（仅前端展示）：</div>
+        <div class="history-title">本地抽卡历史（仅当前设备显示）：</div>
         <ul id="history-list" class="history-list"></ul>
       </div>
     </div>
 
     <div class="footer">
-      <div>说明：这是示例前端，真正的卡牌数据与抽卡逻辑在后端 <code>server.js</code> 中。</div>
-      <div>你可以自行扩展：查看历史记录、只抽某类卡等。</div>
+      <div>说明：卡牌内容与抽卡逻辑在后端 <code>server.js</code> 中，数据存入 SQLite（Render 容器）。</div>
+      <div>你可以自行根据需求扩展更多接口，例如查看全部日志、统计对方用卡情况等。</div>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
-    const API_BASE = "http://localhost:3000";
+    // 这里改成你的 Render 后端地址
+    const API_BASE = "https://chou-qia.onrender.com";
 
     let currentUser = null;
     let currentPartner = null;
     let currentRequests = [];
+    let currentCards = [];
 
     const elNameInput = document.getElementById("input-name");
     const elPartnerInput = document.getElementById("input-partner");
@@ -378,6 +406,7 @@
     const elDrawInfo = document.getElementById("draw-info");
     const elRequestsList = document.getElementById("requests-list");
     const elCardContainer = document.getElementById("card-container");
+    const elMyCardsContainer = document.getElementById("my-cards-container");
     const elHistoryList = document.getElementById("history-list");
     const elToast = document.getElementById("toast");
 
@@ -418,7 +447,6 @@
         elRequestsList.innerHTML = '<div style="color:#9ca3af;">请先登录。</div>';
         return;
       }
-
       if (!currentRequests || currentRequests.length === 0) {
         elRequestsList.innerHTML = '<div style="color:#9ca3af;">暂无抽卡申请记录。</div>';
         return;
@@ -428,8 +456,6 @@
         const div = document.createElement("div");
         div.className = "request-item";
         const isRequester = req.requester_id === currentUser.id;
-        const me = currentUser.name;
-        const other = isRequester ? req.partner_name : req.requester_name;
 
         let statusText = "";
         if (req.used) {
@@ -453,7 +479,6 @@
           </div>
         `;
 
-        // 如果我是 partner 且还没同意且未使用，显示“同意抽卡”按钮
         if (!req.used && req.partner_id === currentUser.id && !req.partner_confirmed) {
           const btn = document.createElement("button");
           btn.textContent = "同意对方抽卡";
@@ -466,13 +491,109 @@
       });
     }
 
+    function renderCurrentDraw(cards) {
+      elCardContainer.innerHTML = "";
+      cards.forEach((card) => {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = `card rarity-${card.rarity}`;
+
+        const nameDiv = document.createElement("div");
+        nameDiv.className = "card-name";
+        nameDiv.textContent = card.text;
+
+        const rarityDiv = document.createElement("div");
+        rarityDiv.className = "card-rarity";
+        rarityDiv.textContent = card.rarity;
+
+        const badgeDiv = document.createElement("div");
+        badgeDiv.className = "badge";
+        badgeDiv.textContent = card.rarity;
+
+        cardDiv.appendChild(nameDiv);
+        cardDiv.appendChild(rarityDiv);
+        cardDiv.appendChild(badgeDiv);
+        elCardContainer.appendChild(cardDiv);
+      });
+    }
+
+    function addHistory(card) {
+      const timeStr = new Date().toLocaleTimeString();
+      const li = document.createElement("li");
+      li.className = "history-item";
+      const rarityClass = `history-rarity-${card.rarity}`;
+      li.innerHTML = `
+        <span>[${timeStr}] </span>
+        <span class="${rarityClass}">${card.rarity}</span>
+        <span> - ${card.text}</span>
+      `;
+      elHistoryList.insertBefore(li, elHistoryList.firstChild);
+    }
+
+    function renderMyCards() {
+      elMyCardsContainer.innerHTML = "";
+      if (!currentUser) {
+        elMyCardsContainer.innerHTML = '<div style="font-size:13px;color:#6b7280;">请先登录。</div>';
+        return;
+      }
+      if (!currentCards || currentCards.length === 0) {
+        elMyCardsContainer.innerHTML = '<div style="font-size:13px;color:#6b7280;">你还没有抽到任何卡。</div>';
+        return;
+      }
+
+      currentCards.forEach((card) => {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = `card rarity-${card.rarity}`;
+        if (card.used) {
+          cardDiv.classList.add("card-used");
+        }
+
+        const nameDiv = document.createElement("div");
+        nameDiv.className = "card-name";
+        nameDiv.textContent = card.card_text;
+
+        const rarityDiv = document.createElement("div");
+        rarityDiv.className = "card-rarity";
+        rarityDiv.textContent = card.rarity;
+
+        const metaDiv = document.createElement("div");
+        metaDiv.className = "card-meta";
+        const dateStr = card.created_at || "";
+        metaDiv.textContent = `${card.used ? "已使用" : "未使用"} · 抽到时间：${dateStr}`;
+
+        const badgeDiv = document.createElement("div");
+        badgeDiv.className = "badge";
+        badgeDiv.textContent = card.rarity;
+
+        if (card.used) {
+          const usedTag = document.createElement("span");
+          usedTag.className = "tag-used";
+          usedTag.textContent = "USED";
+          rarityDiv.appendChild(usedTag);
+        }
+
+        cardDiv.appendChild(nameDiv);
+        cardDiv.appendChild(rarityDiv);
+        cardDiv.appendChild(metaDiv);
+        cardDiv.appendChild(badgeDiv);
+
+        if (!card.used) {
+          const btn = document.createElement("button");
+          btn.textContent = "使用这张卡";
+          btn.style.marginTop = "6px";
+          btn.addEventListener("click", () => useCard(card.id));
+          cardDiv.appendChild(btn);
+        }
+
+        elMyCardsContainer.appendChild(cardDiv);
+      });
+    }
+
     async function apiLogin() {
       const name = elNameInput.value.trim();
       if (!name) {
         showToast("请输入昵称再登录");
         return;
       }
-
       try {
         const res = await fetch(`${API_BASE}/api/login`, {
           method: "POST",
@@ -489,9 +610,10 @@
         showToast("登录成功");
         updateUserUI();
         await loadStatus();
+        await loadCards();
       } catch (e) {
         console.error(e);
-        showToast("无法连接后端，请确认 server.js 已运行");
+        showToast("无法连接后端，请确认后端已部署");
       }
     }
 
@@ -512,6 +634,23 @@
       } catch (e) {
         console.error(e);
         showToast("状态刷新失败");
+      }
+    }
+
+    async function loadCards() {
+      if (!currentUser) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/cards?userId=${currentUser.id}`);
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || "获取卡片失败");
+          return;
+        }
+        currentCards = data.cards || [];
+        renderMyCards();
+      } catch (e) {
+        console.error(e);
+        showToast("获取卡片失败");
       }
     }
 
@@ -594,44 +733,6 @@
       }
     }
 
-    function renderCurrentDraw(cards) {
-      elCardContainer.innerHTML = "";
-      cards.forEach((card) => {
-        const cardDiv = document.createElement("div");
-        cardDiv.className = `card rarity-${card.rarity}`;
-
-        const nameDiv = document.createElement("div");
-        nameDiv.className = "card-name";
-        nameDiv.textContent = card.text;
-
-        const rarityDiv = document.createElement("div");
-        rarityDiv.className = "card-rarity";
-        rarityDiv.textContent = card.rarity;
-
-        const badgeDiv = document.createElement("div");
-        badgeDiv.className = "badge";
-        badgeDiv.textContent = card.rarity;
-
-        cardDiv.appendChild(nameDiv);
-        cardDiv.appendChild(rarityDiv);
-        cardDiv.appendChild(badgeDiv);
-        elCardContainer.appendChild(cardDiv);
-      });
-    }
-
-    function addHistory(card) {
-      const timeStr = new Date().toLocaleTimeString();
-      const li = document.createElement("li");
-      li.className = "history-item";
-      const rarityClass = `history-rarity-${card.rarity}`;
-      li.innerHTML = `
-        <span>[${timeStr}] </span>
-        <span class="${rarityClass}">${card.rarity}</span>
-        <span> - ${card.text}</span>
-      `;
-      elHistoryList.insertBefore(li, elHistoryList.firstChild);
-    }
-
     async function doDraw() {
       if (!currentUser) {
         showToast("请先登录");
@@ -655,29 +756,50 @@
         addHistory(card);
         showToast("抽卡成功！");
         await loadStatus();
+        await loadCards(); // 更新“我的卡牌”
       } catch (e) {
         console.error(e);
         showToast("抽卡请求失败");
       }
     }
 
-    // 清空本地历史（不影响后端）
+    async function useCard(cardId) {
+      if (!currentUser) {
+        showToast("请先登录");
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/api/use-card`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id, cardId })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || "使用失败");
+          return;
+        }
+        showToast("已标记为已使用");
+        await loadCards();
+      } catch (e) {
+        console.error(e);
+        showToast("使用卡片失败");
+      }
+    }
+
     function clearHistory() {
       elHistoryList.innerHTML = "";
     }
 
-    // 事件绑定
     btnLogin.addEventListener("click", apiLogin);
     btnBind.addEventListener("click", bindPartner);
     btnRequestDraw.addEventListener("click", requestDraw);
-    btnRefresh.addEventListener("click", loadStatus);
+    btnRefresh.addEventListener("click", async () => {
+      await loadStatus();
+      await loadCards();
+    });
     btnDraw.addEventListener("click", doDraw);
     btnClearHistory.addEventListener("click", clearHistory);
-
-    // 可以记住上次昵称（可选）
-    // const lastName = localStorage.getItem("gacha_name");
-    // if (lastName) elNameInput.value = lastName;
-    // 在登录成功后：localStorage.setItem("gacha_name", name);
   </script>
 </body>
 </html>
