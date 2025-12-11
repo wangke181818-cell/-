@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>研究生情侣实用抽卡器 · 记录卡片使用状态</title>
+  <title>研究生情侣实用抽卡器 · 卡片记录 + 密码登录 + 自定义卡</title>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -15,7 +15,6 @@
       padding: 32px 12px;
       box-sizing: border-box;
     }
-
     .gacha-container {
       background: #020617;
       border-radius: 16px;
@@ -25,7 +24,6 @@
       box-shadow: 0 20px 55px rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(148, 163, 184, 0.4);
     }
-
     .header {
       display: flex;
       justify-content: space-between;
@@ -34,26 +32,22 @@
       flex-wrap: wrap;
       margin-bottom: 16px;
     }
-
     .title {
       font-size: 22px;
       font-weight: 700;
     }
-
     .subtitle {
       font-size: 12px;
       color: #9ca3af;
     }
-
     .login-panel {
       border-radius: 12px;
       border: 1px solid rgba(148, 163, 184, 0.4);
       padding: 10px 12px;
       background: rgba(15, 23, 42, 0.9);
       font-size: 12px;
-      min-width: 260px;
+      min-width: 320px;
     }
-
     .login-row {
       display: flex;
       gap: 8px;
@@ -61,8 +55,7 @@
       align-items: center;
       flex-wrap: wrap;
     }
-
-    input[type="text"] {
+    input[type="text"], input[type="password"] {
       padding: 6px 8px;
       border-radius: 999px;
       border: 1px solid rgba(148, 163, 184, 0.6);
@@ -72,15 +65,12 @@
       min-width: 120px;
       outline: none;
     }
-
-    input[type="text"]:focus {
+    input[type="text"]:focus, input[type="password"]:focus {
       border-color: #60a5fa;
     }
-
     .info-line {
       margin: 2px 0;
     }
-
     button {
       border: none;
       border-radius: 999px;
@@ -94,18 +84,15 @@
       box-shadow: 0 8px 20px rgba(37, 99, 235, 0.45);
       white-space: nowrap;
     }
-
     button:hover {
       background: #2563eb;
       transform: translateY(-1px);
       box-shadow: 0 12px 30px rgba(37, 99, 235, 0.6);
     }
-
     button:active {
       transform: translateY(0);
       box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
     }
-
     .btn-secondary {
       background: #4b5563;
       box-shadow: none;
@@ -118,7 +105,6 @@
       flex-wrap: wrap;
       align-items: center;
     }
-
     .prob-text {
       font-size: 12px;
       color: #9ca3af;
@@ -129,34 +115,30 @@
       grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.8fr);
       gap: 18px;
     }
-
     @media (max-width: 900px) {
       .main {
         grid-template-columns: 1fr;
       }
     }
 
-    .current-draw,
-    .my-cards {
+    .current-draw, .my-cards, .partner-cards {
       background: radial-gradient(circle at top, rgba(56, 189, 248, 0.12), transparent 60%);
       border-radius: 14px;
       padding: 14px;
       border: 1px solid rgba(148, 163, 184, 0.35);
-      min-height: 160px;
+      min-height: 120px;
+      margin-bottom: 14px;
     }
-
     .section-title {
       font-size: 14px;
       margin-bottom: 8px;
       color: #cbd5f5;
     }
-
     .card-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
       gap: 10px;
     }
-
     .card {
       border-radius: 12px;
       padding: 10px;
@@ -166,31 +148,26 @@
       overflow: hidden;
       font-size: 12px;
     }
-
     .card-name {
       font-size: 12px;
       font-weight: 500;
       margin-bottom: 4px;
     }
-
     .card-rarity {
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       opacity: 0.9;
     }
-
     .card-meta {
       font-size: 11px;
       color: #9ca3af;
       margin-top: 4px;
     }
-
     .card-used {
       opacity: 0.45;
       text-decoration: line-through;
     }
-
     .rarity-SSR {
       border-color: #facc15;
       box-shadow: 0 0 18px rgba(250, 204, 21, 0.5);
@@ -210,7 +187,6 @@
       border-color: #64748b;
       background-image: linear-gradient(135deg, rgba(148, 163, 184, 0.15), rgba(15, 23, 42, 0.95));
     }
-
     .badge {
       position: absolute;
       top: 6px;
@@ -231,27 +207,22 @@
       overflow-y: auto;
       font-size: 12px;
     }
-
     .history-title {
       font-size: 13px;
       margin-bottom: 6px;
     }
-
     .history-list {
       list-style: none;
       padding: 0;
       margin: 0;
     }
-
     .history-item {
       padding: 4px 0;
       border-bottom: 1px dashed rgba(55, 65, 81, 0.8);
     }
-
     .history-item:last-child {
       border-bottom: none;
     }
-
     .history-rarity-SSR { color: #facc15; }
     .history-rarity-SR  { color: #c4b5fd; }
     .history-rarity-R   { color: #7dd3fc; }
@@ -264,12 +235,10 @@
       max-height: 130px;
       overflow-y: auto;
     }
-
     .request-item {
       padding: 3px 0;
       border-bottom: 1px dashed rgba(55, 65, 81, 0.7);
     }
-
     .request-item:last-child {
       border-bottom: none;
     }
@@ -307,6 +276,16 @@
       color: #9ca3af;
       margin-left: 4px;
     }
+
+    select {
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 12px;
+      outline: none;
+    }
   </style>
 </head>
 <body>
@@ -315,25 +294,29 @@
       <div>
         <div class="title">研究生情侣实用抽卡器 · 云后端版</div>
         <div class="subtitle">
-          · 记录每次抽卡 · 每张卡单独存档 · 使用后变为失效<br />
-          · 抽卡前需要双方绑定并同意
+          · 账号+密码登录 · 卡片记录在云端 · 每人可以自定义卡池<br />
+          · 支持多人绑定 · 绑定的人可以互相查看对方的卡
         </div>
       </div>
 
       <div class="login-panel">
         <div class="login-row">
-          <span>你的昵称：</span>
-          <input type="text" id="input-name" placeholder="例如：小A" />
+          <span>昵称：</span>
+          <input type="text" id="input-name" placeholder="例如：一木一" />
+        </div>
+        <div class="login-row">
+          <span>密码：</span>
+          <input type="password" id="input-password" placeholder="首次输入即为设置密码" />
           <button id="btn-login">登录 / 注册</button>
         </div>
         <div class="info-line" id="user-info">当前未登录</div>
-        <div class="info-line" id="partner-info">未绑定另一半</div>
+        <div class="info-line" id="partner-info">未绑定任何人</div>
         <div class="info-line" id="draw-info">累计抽卡次数：-</div>
 
         <hr style="border-color:#374151; margin:6px 0;" />
 
         <div class="login-row">
-          <span>绑定另一半昵称：</span>
+          <span>绑定对象昵称：</span>
           <input type="text" id="input-partner" placeholder="对方要先登录一次" />
           <button id="btn-bind" class="btn-secondary">绑定</button>
         </div>
@@ -344,7 +327,8 @@
         </div>
 
         <div class="info-line" style="margin-top:4px;">
-          流程：你申请 → 对方在自己的账号里同意 → 你才可以抽卡。
+          流程：你申请 → 对方在自己的账号里同意 → 你才可以抽卡。<br />
+          账号名不能重复，密码错误无法登录同名账号。
         </div>
 
         <div class="requests-list" id="requests-list"></div>
@@ -355,7 +339,7 @@
       <button id="btn-draw">抽卡（需双方同意）</button>
       <button id="btn-clear-history" class="btn-secondary">清空本地历史</button>
       <div class="prob-text">
-        抽卡逻辑与卡片记录都在后端。使用卡片后，该卡会标记为“已使用”，不能再用。
+        抽卡结果与卡片记录都在后端。使用卡片后，该卡会标记为“已使用”，不能再用。
       </div>
     </div>
 
@@ -368,10 +352,43 @@
           </div>
         </div>
 
-        <div class="my-cards" style="margin-top:14px;">
+        <div class="my-cards">
           <div class="section-title">我的卡牌（从后端读取，可使用/失效）：</div>
           <div id="my-cards-container" class="card-grid">
             <div style="font-size: 13px; color:#6b7280;">登录后会显示你抽到的所有卡。</div>
+          </div>
+
+          <hr style="border-color:#374151; margin:8px 0;" />
+
+          <div style="font-size:13px;color:#cbd5f5;margin-bottom:4px;">自定义卡池（只对你自己生效）：</div>
+          <div class="login-row" style="margin-bottom:6px;">
+            <span>稀有度：</span>
+            <select id="custom-rarity">
+              <option value="SSR">SSR</option>
+              <option value="SR">SR</option>
+              <option value="R">R</option>
+              <option value="N" selected>N</option>
+            </select>
+            <input type="text" id="custom-text" style="flex:1;min-width:150px;" placeholder="填写你想加的卡片内容" />
+            <button id="btn-add-custom" class="btn-secondary">添加自定义卡</button>
+          </div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:6px;">
+            默认卡池始终存在。你添加的自定义卡，会和默认卡一起参与抽取；你可以删除自己加的卡。
+          </div>
+          <div id="custom-cards-container" class="card-grid">
+            <div style="font-size: 12px; color:#6b7280;">暂无自定义卡。</div>
+          </div>
+        </div>
+
+        <div class="partner-cards">
+          <div class="section-title">查看绑定对象的卡牌：</div>
+          <div class="login-row">
+            <span>选择对象：</span>
+            <select id="select-partner"></select>
+            <button id="btn-load-partner-cards" class="btn-secondary">查看Ta的卡</button>
+          </div>
+          <div id="partner-cards-container" class="card-grid">
+            <div style="font-size: 13px; color:#6b7280;">绑定之后，可以在这里选择对象并查看对方的卡牌。</div>
           </div>
         </div>
       </div>
@@ -384,22 +401,25 @@
 
     <div class="footer">
       <div>说明：卡牌内容与抽卡逻辑在后端 <code>server.js</code> 中，数据存入 SQLite（Render 容器）。</div>
-      <div>你可以自行根据需求扩展更多接口，例如查看全部日志、统计对方用卡情况等。</div>
+      <div>你可以继续扩展规则，例如每日限抽次数、卡片过期时间等。</div>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
-    // 这里改成你的 Render 后端地址
+    // 已部署的后端地址
     const API_BASE = "https://chou-qia.onrender.com";
 
     let currentUser = null;
-    let currentPartner = null;
+    let currentPartner = null; // 老接口中只返回一个
     let currentRequests = [];
     let currentCards = [];
+    let currentCustomCards = [];
+    let currentPartnersList = []; // 多绑定的完整列表
 
     const elNameInput = document.getElementById("input-name");
+    const elPasswordInput = document.getElementById("input-password");
     const elPartnerInput = document.getElementById("input-partner");
     const elUserInfo = document.getElementById("user-info");
     const elPartnerInfo = document.getElementById("partner-info");
@@ -407,8 +427,11 @@
     const elRequestsList = document.getElementById("requests-list");
     const elCardContainer = document.getElementById("card-container");
     const elMyCardsContainer = document.getElementById("my-cards-container");
+    const elCustomCardsContainer = document.getElementById("custom-cards-container");
     const elHistoryList = document.getElementById("history-list");
     const elToast = document.getElementById("toast");
+    const elPartnerSelect = document.getElementById("select-partner");
+    const elPartnerCardsContainer = document.getElementById("partner-cards-container");
 
     const btnLogin = document.getElementById("btn-login");
     const btnBind = document.getElementById("btn-bind");
@@ -416,6 +439,10 @@
     const btnRefresh = document.getElementById("btn-refresh");
     const btnDraw = document.getElementById("btn-draw");
     const btnClearHistory = document.getElementById("btn-clear-history");
+    const btnAddCustom = document.getElementById("btn-add-custom");
+    const btnLoadPartnerCards = document.getElementById("btn-load-partner-cards");
+    const elCustomRarity = document.getElementById("custom-rarity");
+    const elCustomText = document.getElementById("custom-text");
 
     function showToast(msg) {
       elToast.textContent = msg;
@@ -434,10 +461,29 @@
         elDrawInfo.textContent = `累计抽卡次数：${currentUser.draw_count ?? 0}`;
       }
 
-      if (currentPartner) {
-        elPartnerInfo.textContent = `已绑定另一半：${currentPartner.name}（TA累计抽卡次数：${currentPartner.draw_count ?? 0}）`;
+      if (currentPartnersList && currentPartnersList.length > 0) {
+        const names = currentPartnersList.map(p => p.name).join("，");
+        elPartnerInfo.textContent = `已绑定对象：${names}`;
+      } else if (currentPartner) {
+        elPartnerInfo.textContent = `已绑定对象（旧接口）：${currentPartner.name}`;
       } else {
-        elPartnerInfo.textContent = "未绑定另一半";
+        elPartnerInfo.textContent = "未绑定任何人";
+      }
+
+      // 更新下拉框
+      elPartnerSelect.innerHTML = "";
+      if (!currentUser || !currentPartnersList || currentPartnersList.length === 0) {
+        const op = document.createElement("option");
+        op.value = "";
+        op.textContent = "暂无绑定对象";
+        elPartnerSelect.appendChild(op);
+      } else {
+        currentPartnersList.forEach(p => {
+          const op = document.createElement("option");
+          op.value = p.id;
+          op.textContent = `${p.name} (ID:${p.id})`;
+          elPartnerSelect.appendChild(op);
+        });
       }
     }
 
@@ -588,17 +634,106 @@
       });
     }
 
+    function renderCustomCards() {
+      elCustomCardsContainer.innerHTML = "";
+      if (!currentUser) {
+        elCustomCardsContainer.innerHTML = '<div style="font-size:12px;color:#6b7280;">请先登录。</div>';
+        return;
+      }
+      if (!currentCustomCards || currentCustomCards.length === 0) {
+        elCustomCardsContainer.innerHTML = '<div style="font-size:12px;color:#6b7280;">暂无自定义卡。</div>';
+        return;
+      }
+
+      currentCustomCards.forEach((card) => {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = `card rarity-${card.rarity}`;
+
+        const nameDiv = document.createElement("div");
+        nameDiv.className = "card-name";
+        nameDiv.textContent = card.text;
+
+        const rarityDiv = document.createElement("div");
+        rarityDiv.className = "card-rarity";
+        rarityDiv.textContent = `自定义 · ${card.rarity}`;
+
+        const metaDiv = document.createElement("div");
+        metaDiv.className = "card-meta";
+        metaDiv.textContent = card.enabled ? "当前生效" : "已禁用";
+
+        const badgeDiv = document.createElement("div");
+        badgeDiv.className = "badge";
+        badgeDiv.textContent = "Custom";
+
+        cardDiv.appendChild(nameDiv);
+        cardDiv.appendChild(rarityDiv);
+        cardDiv.appendChild(metaDiv);
+        cardDiv.appendChild(badgeDiv);
+
+        if (card.enabled) {
+          const btn = document.createElement("button");
+          btn.textContent = "删除此自定义卡";
+          btn.style.marginTop = "6px";
+          btn.classList.add("btn-secondary");
+          btn.addEventListener("click", () => deleteCustomCard(card.id));
+          cardDiv.appendChild(btn);
+        }
+
+        elCustomCardsContainer.appendChild(cardDiv);
+      });
+    }
+
+    function renderPartnerCards(cards) {
+      elPartnerCardsContainer.innerHTML = "";
+      if (!cards || cards.length === 0) {
+        elPartnerCardsContainer.innerHTML = '<div style="font-size:13px;color:#6b7280;">Ta 还没有抽到卡，或者你没有权限查看。</div>';
+        return;
+      }
+      cards.forEach((card) => {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = `card rarity-${card.rarity}`;
+        if (card.used) {
+          cardDiv.classList.add("card-used");
+        }
+
+        const nameDiv = document.createElement("div");
+        nameDiv.className = "card-name";
+        nameDiv.textContent = card.card_text;
+
+        const rarityDiv = document.createElement("div");
+        rarityDiv.className = "card-rarity";
+        rarityDiv.textContent = card.rarity;
+
+        const metaDiv = document.createElement("div");
+        metaDiv.className = "card-meta";
+        const dateStr = card.created_at || "";
+        metaDiv.textContent = `${card.used ? "已使用" : "未使用"} · 抽到时间：${dateStr}`;
+
+        const badgeDiv = document.createElement("div");
+        badgeDiv.className = "badge";
+        badgeDiv.textContent = card.rarity;
+
+        cardDiv.appendChild(nameDiv);
+        cardDiv.appendChild(rarityDiv);
+        cardDiv.appendChild(metaDiv);
+        cardDiv.appendChild(badgeDiv);
+
+        elPartnerCardsContainer.appendChild(cardDiv);
+      });
+    }
+
     async function apiLogin() {
       const name = elNameInput.value.trim();
-      if (!name) {
-        showToast("请输入昵称再登录");
+      const password = elPasswordInput.value.trim();
+      if (!name || !password) {
+        showToast("请输入昵称和密码");
         return;
       }
       try {
         const res = await fetch(`${API_BASE}/api/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name })
+          body: JSON.stringify({ name, password })
         });
         const data = await res.json();
         if (!res.ok) {
@@ -608,9 +743,10 @@
         currentUser = data.user;
         currentPartner = data.partner || null;
         showToast("登录成功");
-        updateUserUI();
         await loadStatus();
         await loadCards();
+        await loadCustomCards();
+        await loadPartners();
       } catch (e) {
         console.error(e);
         showToast("无法连接后端，请确认后端已部署");
@@ -629,11 +765,29 @@
         currentUser = data.user;
         currentPartner = data.partner || null;
         currentRequests = data.requests || [];
-        updateUserUI();
         renderRequests();
       } catch (e) {
         console.error(e);
         showToast("状态刷新失败");
+      }
+    }
+
+    async function loadPartners() {
+      if (!currentUser) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/partners?userId=${currentUser.id}`);
+        const data = await res.json();
+        if (!res.ok) {
+          // 这个接口失败就不弹太吵，除非有真正错误
+          console.warn("loadPartners error:", data.error);
+          currentPartnersList = [];
+        } else {
+          currentPartnersList = data.partners || [];
+        }
+        updateUserUI();
+      } catch (e) {
+        console.error(e);
+        showToast("获取绑定列表失败");
       }
     }
 
@@ -648,9 +802,27 @@
         }
         currentCards = data.cards || [];
         renderMyCards();
+        updateUserUI();
       } catch (e) {
         console.error(e);
         showToast("获取卡片失败");
+      }
+    }
+
+    async function loadCustomCards() {
+      if (!currentUser) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/custom-cards?userId=${currentUser.id}`);
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || "获取自定义卡失败");
+          return;
+        }
+        currentCustomCards = (data.cards || []).filter(c => c.enabled);
+        renderCustomCards();
+      } catch (e) {
+        console.error(e);
+        showToast("获取自定义卡失败");
       }
     }
 
@@ -675,9 +847,8 @@
           showToast(data.error || "绑定失败");
           return;
         }
-        currentPartner = data.partner;
         showToast(data.message || "绑定成功");
-        updateUserUI();
+        await loadPartners();
       } catch (e) {
         console.error(e);
         showToast("绑定请求失败");
@@ -689,8 +860,8 @@
         showToast("请先登录");
         return;
       }
-      if (!currentPartner) {
-        showToast("请先绑定另一半");
+      if (!currentPartner && (!currentPartnersList || currentPartnersList.length === 0)) {
+        showToast("请先绑定至少一个对象");
         return;
       }
       try {
@@ -751,12 +922,11 @@
         }
         const card = data.card;
         currentUser = data.user;
-        updateUserUI();
         renderCurrentDraw([card]);
         addHistory(card);
         showToast("抽卡成功！");
         await loadStatus();
-        await loadCards(); // 更新“我的卡牌”
+        await loadCards();
       } catch (e) {
         console.error(e);
         showToast("抽卡请求失败");
@@ -787,19 +957,103 @@
       }
     }
 
+    async function addCustomCard() {
+      if (!currentUser) {
+        showToast("请先登录");
+        return;
+      }
+      const rarity = elCustomRarity.value;
+      const text = elCustomText.value.trim();
+      if (!text) {
+        showToast("请输入自定义卡内容");
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/api/custom-cards/add`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id, rarity, text })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || "添加失败");
+          return;
+        }
+        showToast("已添加自定义卡");
+        elCustomText.value = "";
+        await loadCustomCards();
+      } catch (e) {
+        console.error(e);
+        showToast("添加自定义卡失败");
+      }
+    }
+
+    async function deleteCustomCard(cardId) {
+      if (!currentUser) {
+        showToast("请先登录");
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/api/custom-cards/delete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id, cardId })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || "删除失败");
+          return;
+        }
+        showToast("已删除该自定义卡");
+        await loadCustomCards();
+      } catch (e) {
+        console.error(e);
+        showToast("删除自定义卡失败");
+      }
+    }
+
+    async function loadPartnerCards() {
+      if (!currentUser) {
+        showToast("请先登录");
+        return;
+      }
+      const partnerId = Number(elPartnerSelect.value);
+      if (!partnerId) {
+        showToast("请选择一个绑定对象");
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/api/partner-cards?userId=${currentUser.id}&partnerId=${partnerId}`);
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || "获取对方卡片失败");
+          return;
+        }
+        renderPartnerCards(data.cards || []);
+      } catch (e) {
+        console.error(e);
+        showToast("获取对方卡片失败");
+      }
+    }
+
     function clearHistory() {
       elHistoryList.innerHTML = "";
     }
 
+    // 事件绑定
     btnLogin.addEventListener("click", apiLogin);
     btnBind.addEventListener("click", bindPartner);
     btnRequestDraw.addEventListener("click", requestDraw);
     btnRefresh.addEventListener("click", async () => {
       await loadStatus();
       await loadCards();
+      await loadCustomCards();
+      await loadPartners();
     });
     btnDraw.addEventListener("click", doDraw);
     btnClearHistory.addEventListener("click", clearHistory);
+    btnAddCustom.addEventListener("click", addCustomCard);
+    btnLoadPartnerCards.addEventListener("click", loadPartnerCards);
   </script>
 </body>
 </html>
