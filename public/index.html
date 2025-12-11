@@ -5,7 +5,6 @@
   <title>情侣抽卡系统</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    /* ====== 基础样式：简洁商务风 ====== */
     :root {
       --primary: #2952cc;
       --primary-light: #e6ecff;
@@ -196,15 +195,6 @@
       margin-right: 4px;
     }
 
-    .layout-auth {
-      max-width: 420px;
-      margin: 40px auto 0;
-    }
-
-    .center {
-      text-align: center;
-    }
-
     .app-subnav {
       display: flex;
       overflow-x: auto;
@@ -307,6 +297,10 @@
       margin-top: 4px;
     }
 
+    .card-layout-2 {
+      display: block;
+    }
+
     @media (min-width: 720px) {
       .card-layout-2 {
         display: grid;
@@ -325,33 +319,8 @@
     </div>
   </header>
 
-  <!-- 登录视图 -->
-  <main id="view-login" class="layout-auth">
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">登录 / 注册</div>
-          <div class="card-sub">输入昵称和密码即可使用，第一次登录会自动注册。</div>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="loginName">昵称</label>
-        <input id="loginName" type="text" placeholder="请输入昵称，例如：小明" />
-      </div>
-      <div class="form-group">
-        <label for="loginPassword">密码</label>
-        <input id="loginPassword" type="password" placeholder="设置一个记得住的密码" />
-        <div class="text-muted">同一昵称下次登录需要输入相同密码。</div>
-      </div>
-
-      <button class="btn" onclick="handleLogin()">登录</button>
-      <div class="text-muted" id="loginMessage" style="margin-top:8px;"></div>
-    </div>
-  </main>
-
-  <!-- 主视图 -->
-  <div id="view-main" style="display:none; flex:1; flex-direction:column;">
+  <!-- 直接主视图（不再有 H5 登录页） -->
+  <div id="view-main" style="display:flex; flex:1; flex-direction:column;">
     <nav class="app-subnav">
       <button class="subnav-btn active" data-target="panel-overview">概览</button>
       <button class="subnav-btn" data-target="panel-draw">抽卡</button>
@@ -364,35 +333,8 @@
     <main>
       <!-- 概览 -->
       <section id="panel-overview" class="panel active">
-        <div class="card card-layout-2">
-          <div>
-            <div class="card-header">
-              <div class="card-title">我的信息</div>
-              <button class="btn small secondary" onclick="logout()">退出登录</button>
-            </div>
-            <div style="font-size:14px; line-height:1.6;">
-              <div><strong>昵称：</strong><span id="overviewName">-</span></div>
-              <div><strong>总抽卡次数：</strong><span id="overviewDrawCount">0</span></div>
-            </div>
-            <div class="text-muted" style="margin-top:8px;">
-              登录信息会保存在本机，不同设备需要分别登录。
-            </div>
-          </div>
-
-          <div>
-            <div class="card-header">
-              <div class="card-title">已绑定对象</div>
-              <button class="btn small secondary" onclick="refreshPartners()">刷新</button>
-            </div>
-            <div id="partnersList" class="list"></div>
-
-            <div class="form-group" style="margin-top:8px;">
-              <label for="bindName">绑定新对象昵称</label>
-              <input id="bindName" type="text" placeholder="对方需要先登录过一次" />
-            </div>
-            <button class="btn small" onclick="bindPartner()">绑定</button>
-            <div class="text-muted" id="bindMessage" style="margin-top:4px;"></div>
-          </div>
+        <div class="card card-layout-2" id="overviewContainer">
+          <!-- 这里在 JS 初始化时填充 -->
         </div>
 
         <div class="card">
@@ -509,12 +451,15 @@
 </div>
 
 <script>
-  const API_BASE = ""; // 与后端同域，留空即可
+  const API_BASE = ""; // 与后端同域部署时留空
   let currentUser = null;
   let partnersCache = [];
   let requestsCache = [];
 
-  // ======== 登录 & 初始化 ========
+  function getQueryParam(key) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(key);
+  }
 
   function setHeaderUserInfo() {
     const el = document.getElementById("headerUserInfo");
@@ -525,63 +470,41 @@
     el.innerText = `${currentUser.name} · 已抽卡 ${currentUser.draw_count} 次`;
   }
 
-  function showLoginView() {
-    document.getElementById("view-login").style.display = "block";
-    document.getElementById("view-main").style.display = "none";
-  }
-
   function showMainView() {
-    document.getElementById("view-login").style.display = "none";
     document.getElementById("view-main").style.display = "flex";
   }
 
-  async function handleLogin() {
-    const name = document.getElementById("loginName").value.trim();
-    const password = document.getElementById("loginPassword").value;
-    const msgEl = document.getElementById("loginMessage");
-    msgEl.innerText = "";
-
-    if (!name || !password) {
-      msgEl.innerText = "请填写昵称和密码";
-      return;
-    }
-
-    try {
-      const resp = await fetch(`${API_BASE}/api/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, password })
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        msgEl.innerText = data.error || "登录失败";
-        return;
-      }
-      currentUser = data.user;
-      localStorage.setItem("user", JSON.stringify(currentUser));
-      msgEl.innerText = "登录成功，正在进入…";
-
-      setHeaderUserInfo();
-      showMainView();
-      initAfterLogin();
-    } catch (e) {
-      msgEl.innerText = "网络错误，请稍后重试";
-      console.error(e);
-    }
-  }
-
-  function logout() {
-    localStorage.removeItem("user");
-    currentUser = null;
-    partnersCache = [];
-    requestsCache = [];
-    setHeaderUserInfo();
-    showLoginView();
-  }
-
   async function initAfterLogin() {
-    document.getElementById("overviewName").innerText = currentUser.name;
-    document.getElementById("overviewDrawCount").innerText = currentUser.draw_count;
+    document.getElementById("overviewContainer").innerHTML = `
+      <div>
+        <div class="card-header">
+          <div class="card-title">我的信息</div>
+        </div>
+        <div style="font-size:14px; line-height:1.6;">
+          <div><strong>昵称：</strong><span id="overviewName">${currentUser.name}</span></div>
+          <div><strong>总抽卡次数：</strong><span id="overviewDrawCount">${currentUser.draw_count}</span></div>
+        </div>
+        <div class="text-muted" style="margin-top:8px;">
+          登录是在 App 完成的，本页面仅用于展示和操作抽卡功能。
+        </div>
+      </div>
+
+      <div>
+        <div class="card-header">
+          <div class="card-title">已绑定对象</div>
+          <button class="btn small secondary" onclick="refreshPartners()">刷新</button>
+        </div>
+        <div id="partnersList" class="list"></div>
+
+        <div class="form-group" style="margin-top:8px;">
+          <label for="bindName">绑定新对象昵称</label>
+          <input id="bindName" type="text" placeholder="对方需要先登录过一次" />
+        </div>
+        <button class="btn small" onclick="bindPartner()">绑定</button>
+        <div class="text-muted" id="bindMessage" style="margin-top:4px;"></div>
+      </div>
+    `;
+
     await Promise.all([
       refreshPartners(),
       loadStatus(),
@@ -591,25 +514,9 @@
     ]);
   }
 
-  // 自动登录
-  document.addEventListener("DOMContentLoaded", () => {
-    const saved = localStorage.getItem("user");
-    if (saved) {
-      try {
-        currentUser = JSON.parse(saved);
-      } catch (_) {
-        currentUser = null;
-      }
-    }
-    if (currentUser && currentUser.id) {
-      setHeaderUserInfo();
-      showMainView();
-      initAfterLogin();
-    } else {
-      showLoginView();
-    }
+  document.addEventListener("DOMContentLoaded", async () => {
+    const userIdStr = getQueryParam("userId");
 
-    // 绑定子导航
     document.querySelectorAll(".subnav-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const target = btn.getAttribute("data-target");
@@ -619,6 +526,61 @@
         document.getElementById(target).classList.add("active");
       });
     });
+
+    if (!userIdStr) {
+      document.getElementById("overviewContainer").innerHTML = `
+        <div class="card" style="grid-column: 1 / -1;">
+          <div class="card-title">未登录</div>
+          <p style="margin-top:8px; font-size:14px; color:#666;">
+            请通过手机 App 登录后打开本页面，本页面不提供单独登录入口。
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    const userId = Number(userIdStr);
+    if (!userId || Number.isNaN(userId)) {
+      document.getElementById("overviewContainer").innerHTML = `
+        <div class="card" style="grid-column: 1 / -1;">
+          <div class="card-title">参数错误</div>
+          <p style="margin-top:8px; font-size:14px; color:#666;">
+            userId 参数无效，请从 App 重新打开。
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${API_BASE}/api/status?userId=${userId}`);
+      const data = await resp.json();
+      if (!resp.ok) {
+        document.getElementById("overviewContainer").innerHTML = `
+          <div class="card" style="grid-column: 1 / -1;">
+            <div class="card-title">登录失效</div>
+            <p style="margin-top:8px; font-size:14px; color:#666;">
+              ${data.error || "无法获取登录状态，请重新从 App 登录。"}
+            </p>
+          </div>
+        `;
+        return;
+      }
+      currentUser = data.user;
+      setHeaderUserInfo();
+      showMainView();
+      await initAfterLogin();
+    } catch (e) {
+      console.error(e);
+      document.getElementById("overviewContainer").innerHTML = `
+        <div class="card" style="grid-column: 1 / -1;">
+          <div class="card-title">网络错误</div>
+          <p style="margin-top:8px; font-size:14px; color:#666;">
+            无法连接服务器，请检查网络后重新打开 App。
+          </p>
+        </div>
+      `;
+    }
   });
 
   // ======== 合作对象 / 状态 ========
@@ -651,7 +613,6 @@
         `).join("");
       }
 
-      // 更新抽卡 / 查看对方卡片下拉框
       const drawSelect = document.getElementById("drawPartnerSelect");
       const partnerSelect = document.getElementById("partnerCardsSelect");
       drawSelect.innerHTML = "";
@@ -772,7 +733,7 @@
     }
   }
 
-  // ======== 抽卡相关 ========
+  // ======== 抽卡 ========
 
   async function requestDraw() {
     if (!currentUser) return;
@@ -790,7 +751,6 @@
       return;
     }
 
-    // 后端只需要 userId，会根据 couples 查 partnerId
     try {
       const resp = await fetch(`${API_BASE}/api/request-draw`, {
         method: "POST",
