@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>实用抽卡器</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 32px 12px;
+      box-sizing: border-box;
+    }
+
+    .gacha-container {
+      background: #020617;
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 1100px;
+      width: 100%;
+      box-shadow: 0 20px 55px rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .login-panel {
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 10px 12px;
+      background: rgba(15, 23, 42, 0.9);
+      font-size: 12px;
+      min-width: 260px;
+    }
+
+    .login-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    input[type="text"] {
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 12px;
+      min-width: 120px;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: #60a5fa;
+    }
+
+    .info-line {
+      margin: 2px 0;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      background: #1d4ed8;
+      color: #e5e7eb;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.45);
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px rgba(37, 99, 235, 0.6);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-secondary {
+      background: #4b5563;
+      box-shadow: none;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .prob-text {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.5fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 860px) {
+      .main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .current-draw {
+      background: radial-gradient(circle at top, rgba(56, 189, 248, 0.16), transparent 60%);
+      border-radius: 14px;
+      padding: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      min-height: 160px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #cbd5f5;
+    }
+
+    .card-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      border-radius: 12px;
+      padding: 10px;
+      background: #020617;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      position: relative;
+      overflow: hidden;
+      font-size: 12px;
+    }
+
+    .card-name {
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .card-rarity {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.9;
+    }
+
+    .rarity-SSR {
+      border-color: #facc15;
+      box-shadow: 0 0 18px rgba(250, 204, 21, 0.5);
+      background-image: linear-gradient(135deg, rgba(250, 204, 21, 0.16), rgba(30, 64, 175, 0.8));
+    }
+    .rarity-SR {
+      border-color: #a855f7;
+      box-shadow: 0 0 14px rgba(168, 85, 247, 0.5);
+      background-image: linear-gradient(135deg, rgba(168, 85, 247, 0.18), rgba(30, 64, 175, 0.7));
+    }
+    .rarity-R {
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+      background-image: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.9));
+    }
+    .rarity-N {
+      border-color: #64748b;
+      background-image: linear-gradient(135deg, rgba(148, 163, 184, 0.15), rgba(15, 23, 42, 0.95));
+    }
+
+    .badge {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.9);
+    }
+
+    .history {
+      border-radius: 14px;
+      padding: 12px;
+      border: 1px solid rgba(55, 65, 81, 0.8);
+      background: rgba(15, 23, 42, 1);
+      max-height: 360px;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+
+    .history-title {
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .history-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .history-item {
+      padding: 4px 0;
+      border-bottom: 1px dashed rgba(55, 65, 81, 0.8);
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-rarity-SSR { color: #facc15; }
+    .history-rarity-SR  { color: #c4b5fd; }
+    .history-rarity-R   { color: #7dd3fc; }
+    .history-rarity-N   { color: #9ca3af; }
+
+    .status-ok { color: #4ade80; }
+    .status-bad { color: #f97373; }
+
+    .requests-list {
+      margin-top: 6px;
+      border-top: 1px dashed rgba(75, 85, 99, 0.9);
+      padding-top: 4px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .request-item {
+      padding: 3px 0;
+      border-bottom: 1px dashed rgba(55, 65, 81, 0.7);
+    }
+
+    .request-item:last-child {
+      border-bottom: none;
+    }
+
+    .footer {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #6b7280;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(148,163,184,0.7);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 12px;
+      z-index: 999;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="gacha-container">
+    <div class="header">
+      <div>
+        <div class="title">研究生情侣实用抽卡器 · 后端版</div>
+        <div class="subtitle">
+          · 使用后端记录账号与抽卡次数 · 双方绑定并同意后才可抽卡<br/>
+          · 卡牌内容在 <code>server.js</code> 的 <code>cardPool</code> 中配置
+        </div>
+      </div>
+
+      <div class="login-panel">
+        <div class="login-row">
+          <span>你的昵称：</span>
+          <input type="text" id="input-name" placeholder="例如：小A" />
+          <button id="btn-login">登录 / 注册</button>
+        </div>
+        <div class="info-line" id="user-info">当前未登录</div>
+        <div class="info-line" id="partner-info">未绑定另一半</div>
+        <div class="info-line" id="draw-info">累计抽卡次数：-</div>
+
+        <hr style="border-color:#374151; margin:6px 0;" />
+
+        <div class="login-row">
+          <span>绑定另一半昵称：</span>
+          <input type="text" id="input-partner" placeholder="对方也要先登录一次" />
+          <button id="btn-bind" class="btn-secondary">绑定</button>
+        </div>
+
+        <div class="login-row">
+          <button id="btn-request-draw">申请“我想抽卡”</button>
+          <button id="btn-refresh" class="btn-secondary">刷新状态</button>
+        </div>
+
+        <div class="info-line" style="margin-top:4px;">
+          抽卡流程：① 你登录并绑定对方 → ② 你点“申请我抽卡” → ③ 对方登录并在下方点击“同意抽卡” → ④ 你再点“抽卡”。
+        </div>
+
+        <div class="requests-list" id="requests-list">
+          <!-- 抽卡请求列表 -->
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="btn-draw">抽卡（需双方同意）</button>
+      <button id="btn-clear-history" class="btn-secondary">清空历史</button>
+      <div class="prob-text">
+        抽卡由后端判定，次数也由后端记录。若提示“没有已同意的抽卡请求”，说明对方还没在自己账号里点“同意”。
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="current-draw">
+        <div class="section-title">本次抽到的卡：</div>
+        <div id="card-container" class="card-list">
+          <div style="font-size: 13px; color:#6b7280;">请先登录并完成绑定与同意流程，再点击“抽卡”。</div>
+        </div>
+      </div>
+
+      <div class="history">
+        <div class="history-title">本地抽卡历史（仅前端展示）：</div>
+        <ul id="history-list" class="history-list"></ul>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>说明：这是示例前端，真正的卡牌数据与抽卡逻辑在后端 <code>server.js</code> 中。</div>
+      <div>你可以自行扩展：查看历史记录、只抽某类卡等。</div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API_BASE = "http://localhost:3000";
+
+    let currentUser = null;
+    let currentPartner = null;
+    let currentRequests = [];
+
+    const elNameInput = document.getElementById("input-name");
+    const elPartnerInput = document.getElementById("input-partner");
+    const elUserInfo = document.getElementById("user-info");
+    const elPartnerInfo = document.getElementById("partner-info");
+    const elDrawInfo = document.getElementById("draw-info");
+    const elRequestsList = document.getElementById("requests-list");
+    const elCardContainer = document.getElementById("card-container");
+    const elHistoryList = document.getElementById("history-list");
+    const elToast = document.getElementById("toast");
+
+    const btnLogin = document.getElementById("btn-login");
+    const btnBind = document.getElementById("btn-bind");
+    const btnRequestDraw = document.getElementById("btn-request-draw");
+    const btnRefresh = document.getElementById("btn-refresh");
+    const btnDraw = document.getElementById("btn-draw");
+    const btnClearHistory = document.getElementById("btn-clear-history");
+
+    function showToast(msg) {
+      elToast.textContent = msg;
+      elToast.style.display = "block";
+      setTimeout(() => {
+        elToast.style.display = "none";
+      }, 2000);
+    }
+
+    function updateUserUI() {
+      if (!currentUser) {
+        elUserInfo.textContent = "当前未登录";
+        elDrawInfo.textContent = "累计抽卡次数：-";
+      } else {
+        elUserInfo.textContent = `当前登录：${currentUser.name} (ID: ${currentUser.id})`;
+        elDrawInfo.textContent = `累计抽卡次数：${currentUser.draw_count ?? 0}`;
+      }
+
+      if (currentPartner) {
+        elPartnerInfo.textContent = `已绑定另一半：${currentPartner.name}（TA累计抽卡次数：${currentPartner.draw_count ?? 0}）`;
+      } else {
+        elPartnerInfo.textContent = "未绑定另一半";
+      }
+    }
+
+    function renderRequests() {
+      elRequestsList.innerHTML = "";
+      if (!currentUser) {
+        elRequestsList.innerHTML = '<div style="color:#9ca3af;">请先登录。</div>';
+        return;
+      }
+
+      if (!currentRequests || currentRequests.length === 0) {
+        elRequestsList.innerHTML = '<div style="color:#9ca3af;">暂无抽卡申请记录。</div>';
+        return;
+      }
+
+      currentRequests.forEach((req) => {
+        const div = document.createElement("div");
+        div.className = "request-item";
+        const isRequester = req.requester_id === currentUser.id;
+        const me = currentUser.name;
+        const other = isRequester ? req.partner_name : req.requester_name;
+
+        let statusText = "";
+        if (req.used) {
+          statusText = "已使用";
+        } else if (req.requester_confirmed && req.partner_confirmed) {
+          statusText = "双方已同意，可用一次抽卡";
+        } else if (isRequester && req.requester_confirmed && !req.partner_confirmed) {
+          statusText = "你已申请，等待对方同意";
+        } else if (!isRequester && req.requester_confirmed && !req.partner_confirmed) {
+          statusText = "对方向你申请抽卡，待你同意";
+        }
+
+        div.innerHTML = `
+          <div>
+            <strong>申请人：</strong>${req.requester_name}　
+            <strong>对象：</strong>${req.partner_name}　
+            <span style="color:#9ca3af;">(ID: ${req.id})</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+            <span style="font-size:11px;color:#e5e7eb;">状态：${statusText}</span>
+          </div>
+        `;
+
+        // 如果我是 partner 且还没同意且未使用，显示“同意抽卡”按钮
+        if (!req.used && req.partner_id === currentUser.id && !req.partner_confirmed) {
+          const btn = document.createElement("button");
+          btn.textContent = "同意对方抽卡";
+          btn.style.marginTop = "4px";
+          btn.addEventListener("click", () => approveDraw(req.id));
+          div.appendChild(btn);
+        }
+
+        elRequestsList.appendChild(div);
+      });
+    }
+
+    async function apiLogin() {
+      const name = elNameInput.value.trim();
+      if (!name) {
+        showToast("请输入昵称再登录");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || "登录失败");
+          return;
+        }
+        currentUser = data.user;
+        currentPartner = data.partner || null;
+        showToast("登录成功");
+        updateUserUI();
+        await loadStatus();
+      } catch (e) {
+        console.error(e);
+        showToast("无法连接后端，请确认 server.js 已运行");
+      }
+    }
+
+    async function loadStatus() {
+      if (!currentUser) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/status?userId=${currentUser.id}`);
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || "获取状态失败");
+          return;
+        }
+        currentUser = data.user;
+        currentPartner = data.partner || null;
+        currentRequests = data.requests || [];
+        updateUserUI();
+        renderRequests();
+      } catch (e) {
+        console.error(e);
+        showToast("状态刷新失败");
+      }
+    }
+
+    async function bindPartner() {
+      if (!currentUser) {
+        showToast("请先登录");
+        return;
+      }
+      const partnerName = elPartnerInput.value.trim();
+      if (!partnerName) {
+        showToast("请输入对方昵称");
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/api/bind`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id, partnerName })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || "绑定失败");
+          return;
+        }
+        currentPartner = data.partner;
+        showToast(data.message || "绑定成功");
+        updateUserUI();
+      } catch (e) {
+        console.error(e);
+        showToast("绑定请求失败");
+      }
+    }
+
+    async function requestDraw() {
+      if (!currentUser) {
+        showToast("请先登录");
+        return;
+      }
+      if (!currentPartner) {
+        showToast("请先绑定另一半");
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/api/request-draw`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || "申请失败");
+          return;
+        }
+        showToast("申请成功，等待对方同意");
+        await loadStatus();
+      } catch (e) {
+        console.error(e);
+        showToast("申请失败，检查后端");
+      }
+    }
+
+    async function approveDraw(requestId) {
+      if (!currentUser) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/approve-draw`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id, requestId })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || "同意失败");
+          return;
+        }
+        showToast("已同意对方抽卡");
+        await loadStatus();
+      } catch (e) {
+        console.error(e);
+        showToast("同意失败");
+      }
+    }
+
+    function renderCurrentDraw(cards) {
+      elCardContainer.innerHTML = "";
+      cards.forEach((card) => {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = `card rarity-${card.rarity}`;
+
+        const nameDiv = document.createElement("div");
+        nameDiv.className = "card-name";
+        nameDiv.textContent = card.text;
+
+        const rarityDiv = document.createElement("div");
+        rarityDiv.className = "card-rarity";
+        rarityDiv.textContent = card.rarity;
+
+        const badgeDiv = document.createElement("div");
+        badgeDiv.className = "badge";
+        badgeDiv.textContent = card.rarity;
+
+        cardDiv.appendChild(nameDiv);
+        cardDiv.appendChild(rarityDiv);
+        cardDiv.appendChild(badgeDiv);
+        elCardContainer.appendChild(cardDiv);
+      });
+    }
+
+    function addHistory(card) {
+      const timeStr = new Date().toLocaleTimeString();
+      const li = document.createElement("li");
+      li.className = "history-item";
+      const rarityClass = `history-rarity-${card.rarity}`;
+      li.innerHTML = `
+        <span>[${timeStr}] </span>
+        <span class="${rarityClass}">${card.rarity}</span>
+        <span> - ${card.text}</span>
+      `;
+      elHistoryList.insertBefore(li, elHistoryList.firstChild);
+    }
+
+    async function doDraw() {
+      if (!currentUser) {
+        showToast("请先登录");
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/api/draw`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || "抽卡失败");
+          return;
+        }
+        const card = data.card;
+        currentUser = data.user;
+        updateUserUI();
+        renderCurrentDraw([card]);
+        addHistory(card);
+        showToast("抽卡成功！");
+        await loadStatus();
+      } catch (e) {
+        console.error(e);
+        showToast("抽卡请求失败");
+      }
+    }
+
+    // 清空本地历史（不影响后端）
+    function clearHistory() {
+      elHistoryList.innerHTML = "";
+    }
+
+    // 事件绑定
+    btnLogin.addEventListener("click", apiLogin);
+    btnBind.addEventListener("click", bindPartner);
+    btnRequestDraw.addEventListener("click", requestDraw);
+    btnRefresh.addEventListener("click", loadStatus);
+    btnDraw.addEventListener("click", doDraw);
+    btnClearHistory.addEventListener("click", clearHistory);
+
+    // 可以记住上次昵称（可选）
+    // const lastName = localStorage.getItem("gacha_name");
+    // if (lastName) elNameInput.value = lastName;
+    // 在登录成功后：localStorage.setItem("gacha_name", name);
+  </script>
+</body>
+</html>
