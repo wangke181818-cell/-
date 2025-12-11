@@ -2,15 +2,14 @@
 const express = require("express");
 const cors = require("cors");
 const Database = require("better-sqlite3");
-const path = require("path"); // ✅ 新增：用于定位静态页面目录
+const path = require("path"); // 用于定位静态页面目录
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ 前端静态资源 & 根路径（根据你的前端目录改动 "public"）
+// 前端静态资源 & 根路径（前端文件放在 public 目录下）
 const STATIC_DIR = path.join(__dirname, "public");
-
 app.use(express.static(STATIC_DIR));
 
 app.get("/", (req, res) => {
@@ -170,18 +169,36 @@ function rollRarity() {
   return "N";
 }
 
-// 获取某用户的完整卡池（默认卡 + 该用户自定义卡）
+// 获取某用户的完整卡池（默认卡 + 该用户 & 所有绑定对象的自定义卡）
 function getUserCardPool(userId) {
   const pool = {};
   const rarities = Object.keys(defaultCardPool);
+
+  // 找出所有与 userId 绑定的用户（双向）
+  const partners = db.prepare(`
+    SELECT user_a_id AS id FROM couples WHERE user_b_id = ?
+    UNION
+    SELECT user_b_id AS id FROM couples WHERE user_a_id = ?
+  `).all(userId, userId).map(r => r.id);
+
+  // 把自己也加进去
+  partners.push(userId);
+
   for (const rarity of rarities) {
     const base = defaultCardPool[rarity] ? defaultCardPool[rarity].slice() : [];
-    const customRows = db
-      .prepare(`SELECT text FROM custom_cards WHERE user_id = ? AND rarity = ? AND enabled = 1`)
-      .all(userId, rarity);
-    const customTexts = customRows.map((r) => r.text);
-    pool[rarity] = base.concat(customTexts);
+
+    let customList = [];
+    for (const pid of partners) {
+      const rows = db.prepare(`
+        SELECT text FROM custom_cards
+        WHERE user_id = ? AND rarity = ? AND enabled = 1
+      `).all(pid, rarity);
+      customList = customList.concat(rows.map(r => r.text));
+    }
+
+    pool[rarity] = base.concat(customList);
   }
+
   return pool;
 }
 
@@ -321,7 +338,7 @@ app.get("/api/status", (req, res) => {
   });
 });
 
-// ✅ 3.3 补充：获取所有绑定对象列表
+// 3.3 补充：获取所有绑定对象列表
 app.get("/api/partners", (req, res) => {
   const userId = Number(req.query.userId);
   if (!userId) return res.status(400).json({ error: "缺少 userId" });
@@ -596,6 +613,22 @@ app.post("/api/custom-cards/delete", (req, res) => {
   db.prepare(`UPDATE custom_cards SET enabled = 0 WHERE id = ?`).run(cardId);
 
   res.json({ message: "已删除自定义卡（不会再被抽到）" });
+});
+
+// 3.13 查看当前卡库（默认卡 + 绑定双方自定义卡）
+app.get("/api/card-pool", (req, res) => {
+  const userId = Number(req.query.userId);
+  if (!userId) {
+    return res.status(400).json({ error: "缺少 userId" });
+  }
+
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+  if (!user) {
+    return res.status(404).json({ error: "用户不存在" });
+  }
+
+  const pool = getUserCardPool(userId);
+  res.json({ pool });
 });
 
 // === 4. 启动服务器（兼容 Render） ===
