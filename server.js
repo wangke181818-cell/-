@@ -288,7 +288,12 @@ app.post("/api/draw", (req, res) => {
 });
 
 // 启动服务器
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
+});
+
 app.listen(PORT, () => {
   console.log("Server running at http://localhost:" + PORT);
 });
+
