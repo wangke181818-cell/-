@@ -742,11 +742,7 @@ const disabledRows = db.prepare(`
   WHERE user_id IN (${placeholders})
 `).all(...allIds);
 
-const disabledSet = new Set(
-  disabledRows.map(r => `${r.rarity}||${r.text}`)
-);
 
-  const disabledSet = new Set(disabledRows.map(r => `${r.rarity}||${r.text}`));
 
   const pool = {};
 
@@ -858,6 +854,7 @@ app.use((err, req, res, next) => {
 // ===== 启动 =====
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server running on port " + PORT));
+
 
 
 
