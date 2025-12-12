@@ -246,11 +246,17 @@ function getUserCardPoolForDraw(userId) {
 
   partners.push(userId);
 
-  const disabledRows = db.prepare(`
-    SELECT rarity, text
-    FROM disabled_default_cards
-    WHERE user_id = ?
-  `).all(userId);
+  const placeholders = partners.map(() => "?").join(",");
+const disabledRows = db.prepare(`
+  SELECT rarity, text
+  FROM disabled_default_cards
+  WHERE user_id IN (${placeholders})
+`).all(...partners);
+
+const disabledSet = new Set(
+  disabledRows.map(r => `${r.rarity}||${r.text}`)
+);
+
   const disabledSet = new Set(disabledRows.map(r => `${r.rarity}||${r.text}`));
 
   for (const rarity of rarities) {
@@ -746,11 +752,18 @@ app.get("/api/card-pool", (req, res) => {
   }
 
   // 用户隐藏的默认卡
-  const disabledRows = db.prepare(`
-    SELECT rarity, text
-    FROM disabled_default_cards
-    WHERE user_id = ?
-  `).all(userId);
+ const allIds = [userId, ...partnerIds];
+const placeholders = allIds.map(() => "?").join(",");
+const disabledRows = db.prepare(`
+  SELECT rarity, text
+  FROM disabled_default_cards
+  WHERE user_id IN (${placeholders})
+`).all(...allIds);
+
+const disabledSet = new Set(
+  disabledRows.map(r => `${r.rarity}||${r.text}`)
+);
+
   const disabledSet = new Set(disabledRows.map(r => `${r.rarity}||${r.text}`));
 
   const pool = {};
@@ -863,5 +876,6 @@ app.use((err, req, res, next) => {
 // ===== 启动 =====
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server running on port " + PORT));
+
 
 
