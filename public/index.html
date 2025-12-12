@@ -954,6 +954,13 @@
       `;
       setHeaderAvatar(DEFAULT_AVATAR_SVG);
     }
+      const modal = document.getElementById("gachaModal");
+  const card = document.getElementById("gachaModalCard");
+
+  if (modal && card) {
+    modal.addEventListener("click", closeGachaModal);
+    card.addEventListener("click", e => e.stopPropagation());
+  }
   });
 
   // ======== 绑定对象 / 状态 ========
@@ -1061,6 +1068,7 @@
       }
 
       requestsCache = data.requests || [];
+      renderRequests(requestsCache);
       currentUser.draw_count = data.user.draw_count;
 
       const drawCountEl = document.getElementById("overviewDrawCount");
@@ -1608,9 +1616,14 @@
     card.style.animation = "gachaModalIn .22s ease-out forwards";
   }
 
-  function closeGachaModal() {
-    document.getElementById("gachaModal").style.display = "none";
-  }
+ 
+function closeGachaModal() {
+  const modal = document.getElementById("gachaModal");
+  const card = document.getElementById("gachaModalCard");
+  if (!modal) return;
+  modal.style.display = "none";
+  if (card) card.style.animation = "none";
+}
 
   function playGachaShine() {
     const shine = document.getElementById("shine");
@@ -1720,6 +1733,69 @@
       layer.appendChild(s);
     }
   }
+function renderRequests(list) {
+  const el = document.getElementById("requestsList");
+  if (!el) return;
+
+  if (!list || list.length === 0) {
+    el.innerHTML = `<div class="empty-tip">暂无记录</div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(dr => {
+    const status =
+      dr.used ? `<span class="status-badge red">已使用</span>` :
+      (dr.requester_confirmed && dr.partner_confirmed) ? `<span class="status-badge green">双方已同意</span>` :
+      dr.requester_confirmed ? `<span class="status-badge orange">等待对方同意</span>` :
+      `<span class="status-badge">未知</span>`;
+
+    const canApprove = (
+      currentUser &&
+      Number(dr.partner_id) === Number(currentUser.id) &&
+      Number(dr.partner_confirmed) === 0 &&
+      Number(dr.used) === 0
+    );
+
+    return `
+      <div class="list-item">
+        <div class="list-item-header">
+          <div>
+            <div class="list-item-title">${escapeHtml(dr.requester_name)} → ${escapeHtml(dr.partner_name)}</div>
+            <div class="list-item-meta">请求ID: ${dr.id}</div>
+          </div>
+          <div>${status}</div>
+        </div>
+
+        ${canApprove ? `
+          <div class="inline-actions">
+            <button class="btn small" onclick="approveRequest(${dr.id})">同意</button>
+          </div>
+        ` : ``}
+      </div>
+    `;
+  }).join("");
+}
+
+async function approveRequest(requestId) {
+  if (!currentUser) return;
+  try {
+    const resp = await fetch(`${API_BASE}/api/approve-draw`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: currentUser.id, requestId })
+    });
+    const data = await resp.json();
+    if (!resp.ok) {
+      alert(data.error || "同意失败");
+      return;
+    }
+    alert("已同意！");
+    await loadStatus();
+  } catch (e) {
+    console.error(e);
+    alert("网络错误");
+  }
+}
 
   function spawnConfetti(layer, n, rarity) {
     const w = layer.clientWidth || 480;
