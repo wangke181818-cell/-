@@ -253,9 +253,6 @@ const disabledRows = db.prepare(`
 `).all(...partners);
 
 const disabledSet = new Set(
-  disabledRows.map(r => `${r.rarity}||${r.text}`)
-);
-
   const disabledSet = new Set(disabledRows.map(r => `${r.rarity}||${r.text}`));
 
   for (const rarity of rarities) {
@@ -875,6 +872,7 @@ app.use((err, req, res, next) => {
 // ===== 启动 =====
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server running on port " + PORT));
+
 
 
 
