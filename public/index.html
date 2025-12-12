@@ -25,10 +25,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
     }
 
-    body {
-      background: var(--bg);
-      color: var(--text-main);
-    }
+    body { background: var(--bg); color: var(--text-main); }
 
     .app {
       max-width: 980px;
@@ -51,12 +48,7 @@
       z-index: 20;
     }
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
+    .header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
 
     .header-avatar {
       width: 34px;
@@ -79,18 +71,9 @@
       text-overflow: ellipsis;
     }
 
-    header .user-info {
-      font-size: 12px;
-      opacity: 0.92;
-      white-space: nowrap;
-    }
+    header .user-info { font-size: 12px; opacity: 0.92; white-space: nowrap; }
 
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex: 0 0 auto;
-    }
+    .header-right { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 
     .btn {
       border: none;
@@ -103,39 +86,16 @@
       color: #fff;
       transition: opacity 0.15s ease, transform 0.05s ease;
     }
-
-    .btn.secondary {
-      background: rgba(255,255,255,.16);
-      color: #fff;
-      font-weight: 800;
-    }
-
-    .btn.ghost {
-      background: rgba(255,255,255,.12);
-      color: #fff;
-      font-weight: 900;
-    }
-
-    .btn.danger {
-      background: #ffe8ea;
-      color: var(--danger);
-      font-weight: 900;
-    }
-
-    .btn.small {
-      padding: 7px 10px;
-      font-size: 12px;
-      border-radius: 999px;
-    }
+    .btn.secondary { background: rgba(255,255,255,.16); color: #fff; font-weight: 800; }
+    .btn.ghost { background: rgba(255,255,255,.12); color: #fff; font-weight: 900; }
+    .btn.danger { background: #ffe8ea; color: var(--danger); font-weight: 900; }
+    .btn.small { padding: 7px 10px; font-size: 12px; border-radius: 999px; }
 
     .btn:hover { opacity: 0.92; }
     .btn:active { transform: scale(0.99); }
     .btn:disabled { opacity: 0.5; cursor: default; }
 
-    main {
-      flex: 1;
-      padding: 12px;
-    }
+    main { flex: 1; padding: 12px; }
 
     .card {
       background: var(--card-bg);
@@ -153,27 +113,12 @@
       margin-bottom: 10px;
     }
 
-    .card-title {
-      font-size: 15px;
-      font-weight: 900;
-    }
-
-    .card-sub {
-      font-size: 12px;
-      color: var(--text-sub);
-      margin-top: 3px;
-      line-height: 1.4;
-    }
+    .card-title { font-size: 15px; font-weight: 900; }
+    .card-sub { font-size: 12px; color: var(--text-sub); margin-top: 3px; line-height: 1.4; }
 
     .form-group { margin-bottom: 12px; }
 
-    label {
-      display: block;
-      font-size: 13px;
-      margin-bottom: 4px;
-      color: var(--text-sub);
-      font-weight: 700;
-    }
+    label { display: block; font-size: 13px; margin-bottom: 4px; color: var(--text-sub); font-weight: 700; }
 
     input, select, textarea {
       width: 100%;
@@ -193,12 +138,7 @@
 
     textarea { resize: vertical; min-height: 70px; }
 
-    .text-muted {
-      font-size: 12px;
-      color: var(--text-sub);
-      margin-top: 6px;
-      line-height: 1.4;
-    }
+    .text-muted { font-size: 12px; color: var(--text-sub); margin-top: 6px; line-height: 1.4; }
 
     .tag {
       display: inline-block;
@@ -210,25 +150,10 @@
       letter-spacing: 0.3px;
       vertical-align: middle;
     }
-
     .tag-SSR { background: #ffe6f1; color: #c2185b; }
     .tag-SR  { background: #e3f2fd; color: #1565c0; }
     .tag-R   { background: #e8f5e9; color: #2e7d32; }
     .tag-N   { background: #f3f4f6; color: #555; }
-
-    .pill {
-      background: var(--primary-light);
-      color: var(--primary);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-right: 8px;
-      margin-top: 6px;
-      font-weight: 900;
-    }
 
     .app-subnav {
       display: flex;
@@ -265,11 +190,7 @@
     .panel.active { display: block; }
 
     .list { margin-top: 6px; }
-    .list-item {
-      padding: 10px 0;
-      border-bottom: 1px solid #f0f2f5;
-      font-size: 13px;
-    }
+    .list-item { padding: 10px 0; border-bottom: 1px solid #f0f2f5; font-size: 13px; }
     .list-item:last-child { border-bottom: none; }
 
     .list-item-header {
@@ -283,12 +204,7 @@
     .list-item-title { font-weight: 900; }
     .list-item-meta { font-size: 12px; color: var(--text-sub); }
 
-    .inline-actions {
-      margin-top: 8px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    .inline-actions { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
 
     .status-badge {
       display: inline-block;
@@ -300,25 +216,15 @@
       font-weight: 900;
       letter-spacing: 0.2px;
     }
-
     .status-badge.green { background: #e8f5e9; color: var(--success); }
     .status-badge.orange { background: #fff3e0; color: var(--warn); }
     .status-badge.red { background: #ffebee; color: var(--danger); }
 
-    .empty-tip {
-      font-size: 13px;
-      color: var(--text-sub);
-      margin-top: 8px;
-      line-height: 1.5;
-    }
+    .empty-tip { font-size: 13px; color: var(--text-sub); margin-top: 8px; line-height: 1.5; }
 
     .card-layout-2 { display: block; }
     @media (min-width: 720px) {
-      .card-layout-2 {
-        display: grid;
-        grid-template-columns: 1.1fr 1fr;
-        gap: 12px;
-      }
+      .card-layout-2 { display: grid; grid-template-columns: 1.1fr 1fr; gap: 12px; }
     }
 
     .pool-toolbar {
@@ -343,74 +249,21 @@
     .switch input { width: auto; }
 
     /* =============== 抽卡动效：更炸 =============== */
-    @keyframes gachaModalIn {
-      from { transform: translateY(12px) scale(0.98); opacity: 0; }
-      to   { transform: translateY(0) scale(1); opacity: 1; }
-    }
-
-    @keyframes gachaShine {
-      0%   { transform: translateX(-70%) rotate(12deg); opacity: 0; }
-      20%  { opacity: 0.95; }
-      100% { transform: translateX(70%) rotate(12deg); opacity: 0; }
-    }
-
-    @keyframes gachaPulse {
-      0%,100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
-      50%     { transform: scale(1.04); filter: drop-shadow(0 16px 28px rgba(41,82,204,.28)); }
-    }
-
-    @keyframes shakeSoft {
-      0%,100% { transform: translate(0,0); }
-      20% { transform: translate(-2px, 1px); }
-      40% { transform: translate(2px, -1px); }
-      60% { transform: translate(-1px, -1px); }
-      80% { transform: translate(1px, 2px); }
-    }
+    @keyframes gachaModalIn { from { transform: translateY(12px) scale(0.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+    @keyframes gachaShine { 0% { transform: translateX(-70%) rotate(12deg); opacity: 0; } 20% { opacity: 0.95; } 100% { transform: translateX(70%) rotate(12deg); opacity: 0; } }
+    @keyframes gachaPulse { 0%,100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); } 50% { transform: scale(1.04); filter: drop-shadow(0 16px 28px rgba(41,82,204,.28)); } }
+    @keyframes shakeSoft { 0%,100% { transform: translate(0,0); } 20% { transform: translate(-2px, 1px); } 40% { transform: translate(2px, -1px); } 60% { transform: translate(-1px, -1px); } 80% { transform: translate(1px, 2px); } }
 
     .gacha-SSR { background: radial-gradient(circle at 15% 20%, rgba(255,95,185,.42), transparent 45%), linear-gradient(135deg, rgba(255,120,190,.18), #fff) !important; }
     .gacha-SR  { background: radial-gradient(circle at 15% 20%, rgba(90,170,255,.38), transparent 45%), linear-gradient(135deg, rgba(80,160,255,.18), #fff) !important; }
     .gacha-R   { background: radial-gradient(circle at 15% 20%, rgba(95,220,145,.30), transparent 45%), linear-gradient(135deg, rgba(90,200,130,.16), #fff) !important; }
     .gacha-N   { background: radial-gradient(circle at 15% 20%, rgba(170,170,170,.22), transparent 45%), linear-gradient(135deg, rgba(180,180,180,.12), #fff) !important; }
 
-    .fx-layer {
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      overflow:hidden;
-    }
-
-    .spark {
-      position:absolute;
-      width:8px;
-      height:8px;
-      border-radius:999px;
-      opacity:0;
-      transform: translate(-50%, -50%);
-      animation: sparkPop .9s ease-out forwards;
-      filter: blur(.1px);
-    }
-
-    @keyframes sparkPop {
-      0%   { opacity:0; transform: translate(-50%,-50%) scale(.6); }
-      10%  { opacity:1; }
-      100% { opacity:0; transform: translate(-50%,-50%) translate(var(--dx), var(--dy)) scale(1.2); }
-    }
-
-    .confetti {
-      position:absolute;
-      width:10px;
-      height:16px;
-      border-radius:3px;
-      opacity:.95;
-      transform: translate(-50%, -50%) rotate(var(--rot));
-      animation: confettiFall 1.2s ease-in forwards;
-      top:-10px;
-    }
-
-    @keyframes confettiFall {
-      0%   { transform: translate(var(--x), -20px) rotate(var(--rot)); opacity: .95; }
-      100% { transform: translate(calc(var(--x) + var(--dx)), 220px) rotate(calc(var(--rot) + 220deg)); opacity: 0; }
-    }
+    .fx-layer { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+    .spark { position:absolute; width:8px; height:8px; border-radius:999px; opacity:0; transform: translate(-50%, -50%); animation: sparkPop .9s ease-out forwards; filter: blur(.1px); }
+    @keyframes sparkPop { 0% { opacity:0; transform: translate(-50%,-50%) scale(.6); } 10% { opacity:1; } 100% { opacity:0; transform: translate(-50%,-50%) translate(var(--dx), var(--dy)) scale(1.2); } }
+    .confetti { position:absolute; width:10px; height:16px; border-radius:3px; opacity:.95; transform: translate(-50%, -50%) rotate(var(--rot)); animation: confettiFall 1.2s ease-in forwards; top:-10px; }
+    @keyframes confettiFall { 0% { transform: translate(var(--x), -20px) rotate(var(--rot)); opacity: .95; } 100% { transform: translate(calc(var(--x) + var(--dx)), 220px) rotate(calc(var(--rot) + 220deg)); opacity: 0; } }
 
     .avatar-uploader {
       display:flex;
@@ -471,7 +324,10 @@
               <div class="card-title">最近抽卡请求</div>
               <div class="card-sub">你和绑定对象之间最近的申请记录。</div>
             </div>
-            <button class="btn small secondary" onclick="loadStatus()">刷新</button>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+              <button class="btn small secondary" onclick="loadStatus()">刷新</button>
+              <button class="btn small" onclick="approveAllPending()">一键同意所有待处理</button>
+            </div>
           </div>
           <div id="requestsList" class="list"></div>
         </div>
@@ -551,8 +407,8 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">卡库一览（可管理默认卡）</div>
-              <div class="card-sub">你可以把“不想再出现”的系统默认卡隐藏掉（只对你生效）。</div>
+              <div class="card-title">卡库一览（可删除默认卡 + 批量删除）</div>
+              <div class="card-sub">默认卡：删除后不再出现（建议后端做成仅对当前用户生效）。</div>
             </div>
             <button class="btn small secondary" onclick="loadCardPool()">刷新</button>
           </div>
@@ -560,13 +416,21 @@
           <div class="pool-toolbar">
             <input id="poolSearchInput" placeholder="搜索卡片内容（支持模糊匹配）" />
             <label class="switch">
-              <input type="checkbox" id="poolShowDisabled" />
-              显示我隐藏的默认卡
+              <input type="checkbox" id="poolSelectionMode" />
+              选择模式（批量删除）
             </label>
+
+            <button class="btn small secondary" onclick="selectAllPool()">全选</button>
+            <button class="btn small secondary" onclick="clearPoolSelection()">取消选择</button>
+            <button class="btn small danger" onclick="deleteSelectedPool()">删除选中</button>
+
             <button class="btn small secondary" onclick="clearPoolSearch()">清空搜索</button>
           </div>
 
           <div id="cardPoolContent" style="margin-top:10px;"></div>
+          <div class="text-muted" style="margin-top:8px;">
+            批量删除说明：默认卡走 <code>/api/default-cards/delete</code>，自定义卡走 <code>/api/custom-cards/delete</code>。
+          </div>
         </div>
       </section>
 
@@ -603,7 +467,7 @@
           <div class="card-header">
             <div>
               <div class="card-title">我的自定义卡</div>
-              <div class="card-sub">可从卡库移除（软删除），移除后不会再被抽到。</div>
+              <div class="card-sub">单张删除（在卡库里也可批量删除）。</div>
             </div>
             <button class="btn small secondary" onclick="loadCustomCards()">刷新</button>
           </div>
@@ -668,6 +532,9 @@
 
   // 卡库缓存
   let cardPoolCache = null;
+
+  // 批量选择
+  let poolSelectedKeys = new Set();
 
   // ---------- 顶部：退出 & 头像 ----------
   const DEFAULT_AVATAR_SVG = "data:image/svg+xml;utf8," + encodeURIComponent(`
@@ -755,18 +622,31 @@
       .replaceAll("'", "&#039;");
   }
 
+  function escapeJs(str) {
+    return String(str)
+      .replaceAll("\\", "\\\\")
+      .replaceAll("'", "\\'")
+      .replaceAll('"', '\\"')
+      .replaceAll("\n", "\\n")
+      .replaceAll("\r", "\\r");
+  }
+
+  // ✅ 统一 truthy：兼容 0/1、"0"/"1"、true/false
+  function truthy(v) {
+    if (v === true) return true;
+    if (v === false) return false;
+    if (v === 1 || v === "1") return true;
+    if (v === 0 || v === "0") return false;
+    return !!v;
+  }
+
   function setHeaderUserInfo() {
     const el = document.getElementById("headerUserInfo");
-    if (!currentUser) {
-      el.innerText = "未登录";
-      return;
-    }
+    if (!currentUser) { el.innerText = "未登录"; return; }
     el.innerText = `${currentUser.name} · 已抽卡 ${currentUser.draw_count} 次`;
   }
 
-  function showMainView() {
-    document.getElementById("view-main").style.display = "flex";
-  }
+  function showMainView() { document.getElementById("view-main").style.display = "flex"; }
 
   function clearPoolSearch() {
     const el = document.getElementById("poolSearchInput");
@@ -832,9 +712,7 @@
     ]);
   }
 
-  function triggerAvatarPick() {
-    document.getElementById("headerAvatar").click();
-  }
+  function triggerAvatarPick() { document.getElementById("headerAvatar").click(); }
 
   async function loadUserProfile() {
     if (!currentUser) return;
@@ -861,7 +739,7 @@
   document.addEventListener("DOMContentLoaded", async () => {
     bindHeaderActions();
 
-    // ✅ 弹层点击关闭绑定（独立执行，不依赖 try/catch）
+    // 弹层点击关闭绑定
     const modal = document.getElementById("gachaModal");
     const card = document.getElementById("gachaModalCard");
     if (modal && card) {
@@ -880,20 +758,18 @@
         document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
         document.getElementById(target).classList.add("active");
 
-        if (target === "panel-card-pool") {
-          await loadCardPool();
-        }
+        if (target === "panel-card-pool") await loadCardPool();
       });
     });
 
-    // 卡库搜索实时刷新（轻量防抖）
+    // 卡库搜索轻量防抖
     const poolSearch = document.getElementById("poolSearchInput");
     let t = null;
     poolSearch.addEventListener("input", () => {
       clearTimeout(t);
       t = setTimeout(() => renderCardPool(), 180);
     });
-    document.getElementById("poolShowDisabled").addEventListener("change", () => renderCardPool());
+    document.getElementById("poolSelectionMode").addEventListener("change", () => renderCardPool());
 
     // 未带 userId
     if (!userIdStr) {
@@ -1021,10 +897,7 @@
     const msgEl = document.getElementById("bindMessage");
     msgEl.innerText = "";
 
-    if (!partnerName) {
-      msgEl.innerText = "请输入对方昵称";
-      return;
-    }
+    if (!partnerName) { msgEl.innerText = "请输入对方昵称"; return; }
 
     try {
       const resp = await fetch(`${API_BASE}/api/bind`, {
@@ -1033,10 +906,7 @@
         body: JSON.stringify({ userId: currentUser.id, partnerName })
       });
       const data = await resp.json();
-      if (!resp.ok) {
-        msgEl.innerText = data.error || "绑定失败";
-        return;
-      }
+      if (!resp.ok) { msgEl.innerText = data.error || "绑定失败"; return; }
       msgEl.innerText = data.message || "绑定成功";
       document.getElementById("bindName").value = "";
       await refreshPartners();
@@ -1047,7 +917,7 @@
     }
   }
 
-  // ✅ 修复点：loadStatus 只渲染一次（renderRequests），不要再覆盖 innerHTML
+  // ✅ 只渲染一次：renderRequests（含“同意按钮”）
   async function loadStatus() {
     if (!currentUser) return;
     const listEl = document.getElementById("requestsList");
@@ -1068,12 +938,112 @@
       if (drawCountEl) drawCountEl.innerText = data.user.draw_count;
       setHeaderUserInfo();
 
-      // ✅ 统一渲染（含“同意”按钮）
       renderRequests(requestsCache);
     } catch (e) {
       console.error(e);
       listEl.innerHTML = `<div class="empty-tip">网络错误，稍后重试。</div>`;
     }
+  }
+
+  // ======== 抽卡请求渲染（含单条同意） ========
+  function renderRequests(list) {
+    const el = document.getElementById("requestsList");
+    if (!el) return;
+
+    if (!list || list.length === 0) {
+      el.innerHTML = `<div class="empty-tip">暂无记录</div>`;
+      return;
+    }
+
+    el.innerHTML = list.map(dr => {
+      const isUsed = truthy(dr.used);
+      const bothOk = truthy(dr.requester_confirmed) && truthy(dr.partner_confirmed);
+
+      const status =
+        isUsed ? `<span class="status-badge red">已使用</span>` :
+        bothOk ? `<span class="status-badge green">双方已同意</span>` :
+        truthy(dr.requester_confirmed) ? `<span class="status-badge orange">等待对方同意</span>` :
+        `<span class="status-badge">未知</span>`;
+
+      const canApprove = (
+        currentUser &&
+        String(dr.partner_id) === String(currentUser.id) &&
+        !truthy(dr.partner_confirmed) &&
+        !truthy(dr.used)
+      );
+
+      return `
+        <div class="list-item">
+          <div class="list-item-header">
+            <div>
+              <div class="list-item-title">${escapeHtml(dr.requester_name)} → ${escapeHtml(dr.partner_name)}</div>
+              <div class="list-item-meta">请求ID: ${dr.id}</div>
+            </div>
+            <div>${status}</div>
+          </div>
+
+          ${canApprove ? `
+            <div class="inline-actions">
+              <button class="btn small" onclick="approveRequest(${dr.id})">同意</button>
+            </div>
+          ` : ``}
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function approveRequest(requestId) {
+    if (!currentUser) return;
+    try {
+      const resp = await fetch(`${API_BASE}/api/approve-draw`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUser.id, requestId })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        alert(data.error || "同意失败");
+        return;
+      }
+      alert("已同意！");
+      await loadStatus();
+    } catch (e) {
+      console.error(e);
+      alert("网络错误");
+    }
+  }
+
+  // ✅ 一键同意：同意所有“需要当前用户同意”的请求
+  async function approveAllPending() {
+    if (!currentUser) return;
+
+    const pendingList = (requestsCache || []).filter(dr =>
+      String(dr.partner_id) === String(currentUser.id) &&
+      !truthy(dr.partner_confirmed) &&
+      !truthy(dr.used)
+    );
+
+    if (pendingList.length === 0) {
+      alert("没有需要你同意的请求");
+      return;
+    }
+
+    let ok = 0, fail = 0;
+    for (const dr of pendingList) {
+      try {
+        const resp = await fetch(`${API_BASE}/api/approve-draw`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id, requestId: dr.id })
+        });
+        if (resp.ok) ok++; else fail++;
+      } catch (e) {
+        fail++;
+      }
+    }
+
+    alert(`一键同意完成：成功 ${ok} 条，失败 ${fail} 条`);
+    await loadStatus();
   }
 
   // ======== 抽卡 ========
@@ -1082,10 +1052,7 @@
     const msgEl = document.getElementById("drawMessage");
     msgEl.innerText = "";
 
-    if (!partnersCache.length) {
-      msgEl.innerText = "请先绑定对象";
-      return;
-    }
+    if (!partnersCache.length) { msgEl.innerText = "请先绑定对象"; return; }
 
     try {
       const resp = await fetch(`${API_BASE}/api/request-draw`, {
@@ -1093,11 +1060,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: currentUser.id })
       });
-      const data = await resp.json();
-      if (!resp.ok) {
-        msgEl.innerText = data.error || "申请失败";
-        return;
-      }
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) { msgEl.innerText = data.error || "申请失败"; return; }
       msgEl.innerText = data.message || "申请已发送";
       await loadStatus();
     } catch (e) {
@@ -1108,19 +1072,13 @@
 
   async function approveFirstPending() {
     const msgEl = document.getElementById("drawMessage");
-    if (!currentUser || !requestsCache.length) {
-      msgEl.innerText = "暂无可同意的申请";
-      return;
-    }
+    if (!currentUser || !requestsCache.length) { msgEl.innerText = "暂无可同意的申请"; return; }
 
     const pending = requestsCache.find(r =>
       !truthy(r.used) && String(r.partner_id) === String(currentUser.id) && !truthy(r.partner_confirmed)
     );
 
-    if (!pending) {
-      msgEl.innerText = "当前没有需要你同意的申请";
-      return;
-    }
+    if (!pending) { msgEl.innerText = "当前没有需要你同意的申请"; return; }
 
     try {
       const resp = await fetch(`${API_BASE}/api/approve-draw`, {
@@ -1128,11 +1086,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: currentUser.id, requestId: pending.id })
       });
-      const data = await resp.json();
-      if (!resp.ok) {
-        msgEl.innerText = data.error || "操作失败";
-        return;
-      }
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) { msgEl.innerText = data.error || "操作失败"; return; }
       msgEl.innerText = data.message || "已同意";
       await loadStatus();
     } catch (e) {
@@ -1159,7 +1114,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: currentUser.id })
       });
-      const data = await resp.json();
+      const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
         resultEl.innerHTML = `<div class="empty-tip">${escapeHtml(data.error || "抽卡失败")}</div>`;
         setGachaText(data.error || "抽卡失败");
@@ -1187,11 +1142,7 @@
         </div>
       `;
 
-      await Promise.all([
-        loadMyCards(),
-        loadStatus(),
-        loadCardPool()
-      ]);
+      await Promise.all([ loadMyCards(), loadStatus(), loadCardPool() ]);
     } catch (e) {
       console.error(e);
       resultEl.innerHTML = `<div class="empty-tip">网络错误，稍后重试。</div>`;
@@ -1207,7 +1158,7 @@
 
     try {
       const resp = await fetch(`${API_BASE}/api/cards?userId=${currentUser.id}`);
-      const data = await resp.json();
+      const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
         listEl.innerHTML = `<div class="empty-tip">${escapeHtml(data.error || "加载失败")}</div>`;
         return;
@@ -1246,11 +1197,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: currentUser.id, cardId })
       });
-      const data = await resp.json();
-      if (!resp.ok) {
-        alert(data.error || "操作失败");
-        return;
-      }
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) { alert(data.error || "操作失败"); return; }
       await loadMyCards();
     } catch (e) {
       console.error(e);
@@ -1275,7 +1223,7 @@
 
     try {
       const resp = await fetch(`${API_BASE}/api/partner-cards?userId=${currentUser.id}&partnerId=${partnerId}`);
-      const data = await resp.json();
+      const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
         listEl.innerHTML = `<div class="empty-tip">${escapeHtml(data.error || "加载失败")}</div>`;
         return;
@@ -1310,7 +1258,7 @@
 
     try {
       const resp = await fetch(`${API_BASE}/api/custom-cards?userId=${currentUser.id}`);
-      const data = await resp.json();
+      const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
         listEl.innerHTML = `<div class="empty-tip">${escapeHtml(data.error || "加载失败")}</div>`;
         return;
@@ -1331,10 +1279,9 @@
             </div>
           </div>
           <div style="font-size:14px; line-height:1.7;">${escapeHtml(c.text)}</div>
-          ${truthy(c.enabled) ? `
-            <div class="inline-actions">
-              <button class="btn small danger" onclick="deleteCustomCard(${c.id})">从卡库移除</button>
-            </div>` : ""}
+          <div class="inline-actions">
+            <button class="btn small danger" onclick="deleteCustomCard(${c.id})">删除</button>
+          </div>
         </div>
       `).join("");
     } catch (e) {
@@ -1350,10 +1297,7 @@
     const msgEl = document.getElementById("customAddMessage");
     msgEl.innerText = "";
 
-    if (!text) {
-      msgEl.innerText = "请填写卡片内容";
-      return;
-    }
+    if (!text) { msgEl.innerText = "请填写卡片内容"; return; }
 
     try {
       const resp = await fetch(`${API_BASE}/api/custom-cards/add`, {
@@ -1361,11 +1305,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: currentUser.id, rarity, text })
       });
-      const data = await resp.json();
-      if (!resp.ok) {
-        msgEl.innerText = data.error || "添加失败";
-        return;
-      }
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) { msgEl.innerText = data.error || "添加失败"; return; }
 
       msgEl.innerText = data.message || "添加成功";
       document.getElementById("customText").value = "";
@@ -1379,7 +1320,7 @@
 
   async function deleteCustomCard(cardId) {
     if (!currentUser) return;
-    if (!confirm("确定要从卡库移除这张自定义卡吗？")) return;
+    if (!confirm("确定删除这张自定义卡吗？")) return;
 
     try {
       const resp = await fetch(`${API_BASE}/api/custom-cards/delete`, {
@@ -1387,11 +1328,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: currentUser.id, cardId })
       });
-      const data = await resp.json();
-      if (!resp.ok) {
-        alert(data.error || "删除失败");
-        return;
-      }
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) { alert(data.error || "删除失败"); return; }
       await Promise.all([ loadCustomCards(), loadCardPool() ]);
     } catch (e) {
       console.error(e);
@@ -1399,7 +1337,7 @@
     }
   }
 
-  // ======== 卡库一览 ========
+  // ======== 卡库一览：加载 & 渲染（支持删除默认卡 + 多选批量删除） ========
   async function loadCardPool() {
     if (!currentUser) return;
     const container = document.getElementById("cardPoolContent");
@@ -1407,7 +1345,7 @@
 
     try {
       const resp = await fetch(`${API_BASE}/api/card-pool?userId=${currentUser.id}`);
-      const data = await resp.json();
+      const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
         container.innerHTML = `<div class="empty-tip">${escapeHtml(data.error || "加载失败")}</div>`;
         return;
@@ -1421,6 +1359,105 @@
     }
   }
 
+  function poolKeyOf(item) {
+    if (item.type === "default") return `d|${item.rarity}|${item.text}`;
+    return `c|${item.id}`;
+  }
+
+  function togglePoolSelect(key, isChecked) {
+    if (isChecked) poolSelectedKeys.add(key);
+    else poolSelectedKeys.delete(key);
+  }
+
+  function selectAllPool() {
+    if (!cardPoolCache) return;
+    const sm = document.getElementById("poolSelectionMode");
+    if (sm && !sm.checked) sm.checked = true;
+
+    const rarityOrder = ["SSR","SR","R","N"];
+    for (const rarity of rarityOrder) {
+      const arr = cardPoolCache[rarity] || [];
+      for (const item of arr) poolSelectedKeys.add(poolKeyOf(item));
+    }
+    renderCardPool();
+  }
+
+  function clearPoolSelection() {
+    poolSelectedKeys.clear();
+    renderCardPool();
+  }
+
+  async function deleteSelectedPool() {
+    if (!currentUser) return;
+    if (poolSelectedKeys.size === 0) { alert("你还没有选择任何卡片"); return; }
+    if (!confirm(`确定删除选中的 ${poolSelectedKeys.size} 张卡吗？`)) return;
+
+    const keys = Array.from(poolSelectedKeys);
+
+    const defaultToDelete = [];
+    const customToDelete = [];
+
+    for (const k of keys) {
+      const parts = k.split("|");
+      const kind = parts[0];
+      if (kind === "d") {
+        defaultToDelete.push({ rarity: parts[1], text: parts.slice(2).join("|") });
+      } else if (kind === "c") {
+        customToDelete.push({ id: Number(parts[1]) });
+      }
+    }
+
+    let ok = 0, fail = 0;
+
+    for (const it of defaultToDelete) {
+      try {
+        const resp = await fetch(`${API_BASE}/api/default-cards/delete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id, rarity: it.rarity, text: it.text })
+        });
+        if (resp.ok) ok++; else fail++;
+      } catch (e) { fail++; }
+    }
+
+    for (const it of customToDelete) {
+      try {
+        const resp = await fetch(`${API_BASE}/api/custom-cards/delete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id, cardId: it.id })
+        });
+        if (resp.ok) ok++; else fail++;
+      } catch (e) { fail++; }
+    }
+
+    alert(`批量删除完成：成功 ${ok} 张，失败 ${fail} 张`);
+    poolSelectedKeys.clear();
+    await Promise.all([ loadCardPool(), loadCustomCards() ]);
+  }
+
+  async function deleteDefaultCard(rarity, text) {
+    if (!currentUser) return;
+    if (!confirm("确定删除这张默认卡吗？（建议后端做成仅对当前用户生效）")) return;
+
+    try {
+      const resp = await fetch(`${API_BASE}/api/default-cards/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUser.id, rarity, text })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        alert(data.error || "删除失败（后端未实现该接口也会失败）");
+        return;
+      }
+      await loadCardPool();
+    } catch (e) {
+      console.error(e);
+      alert("网络错误，请稍后重试");
+    }
+  }
+
   function renderCardPool() {
     const container = document.getElementById("cardPoolContent");
     if (!cardPoolCache) {
@@ -1429,8 +1466,6 @@
     }
 
     const q = (document.getElementById("poolSearchInput").value || "").trim().toLowerCase();
-    const showDisabled = !!document.getElementById("poolShowDisabled").checked;
-
     const rarityOrder = ["SSR","SR","R","N"];
     let html = "";
 
@@ -1440,8 +1475,6 @@
       const filtered = arr.filter(item => {
         const text = (item.text || "").toLowerCase();
         if (q && !text.includes(q)) return false;
-
-        if (item.type === "default" && truthy(item.disabled) && !showDisabled) return false;
         return true;
       });
 
@@ -1452,7 +1485,7 @@
           <div class="card-header" style="margin-bottom:6px;">
             <div>
               <div class="card-title">稀有度 ${rarity}</div>
-              <div class="card-sub">默认卡可隐藏/恢复；自定义卡显示创建者</div>
+              <div class="card-sub">默认卡可删除；选择模式可批量删除</div>
             </div>
           </div>
           <div class="list">
@@ -1474,27 +1507,38 @@
     const text = escapeHtml(item.text);
     const type = item.type;
 
+    const selectionMode = !!document.getElementById("poolSelectionMode")?.checked;
+    const key = poolKeyOf(item);
+    const checked = poolSelectedKeys.has(key);
+
+    const checkboxHtml = selectionMode
+      ? `<label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+           <input type="checkbox" ${checked ? "checked" : ""} onchange="togglePoolSelect('${escapeJs(key)}', this.checked)">
+           <span class="status-badge">选择</span>
+         </label>`
+      : "";
+
     if (type === "default") {
-      const disabled = truthy(item.disabled);
       return `
         <div class="list-item">
           <div class="list-item-header">
             <div>
               <span class="tag tag-${rarity}">${rarity}</span>
-              <span class="status-badge ${disabled ? "red" : ""}">${disabled ? "已隐藏(仅你)" : "系统默认"}</span>
+              <span class="status-badge">系统默认</span>
             </div>
+            <div>${checkboxHtml}</div>
           </div>
+
           <div style="font-size:14px; line-height:1.7;">${text}</div>
+
           <div class="inline-actions">
-            ${disabled
-              ? `<button class="btn small secondary" onclick="enableDefaultCard('${rarity}', '${escapeJs(item.text)}')">恢复到卡池</button>`
-              : `<button class="btn small danger" onclick="disableDefaultCard('${rarity}', '${escapeJs(item.text)}')">从我的卡池隐藏</button>`
-            }
+            <button class="btn small danger" onclick="deleteDefaultCard('${rarity}', '${escapeJs(item.text)}')">删除这张默认卡</button>
           </div>
         </div>
       `;
     }
 
+    // custom
     const enabled = truthy(item.enabled);
     const owner = escapeHtml(item.owner_name || "未知");
     const ownerTag = truthy(item.is_self) ? "我创建的" : `Ta 创建的：${owner}`;
@@ -1507,138 +1551,18 @@
             <span class="status-badge">${ownerTag}</span>
             ${!enabled ? `<span class="status-badge red" style="margin-left:6px;">已禁用</span>` : ""}
           </div>
+          <div>${checkboxHtml}</div>
         </div>
+
         <div style="font-size:14px; line-height:1.7;">${text}</div>
+
+        ${truthy(item.is_self) ? `
+          <div class="inline-actions">
+            <button class="btn small danger" onclick="deleteCustomCard(${item.id})">删除这张自定义卡</button>
+          </div>
+        ` : ``}
       </div>
     `;
-  }
-
-  function escapeJs(str) {
-    return String(str)
-      .replaceAll("\\", "\\\\")
-      .replaceAll("'", "\\'")
-      .replaceAll('"', '\\"')
-      .replaceAll("\n", "\\n")
-      .replaceAll("\r", "\\r");
-  }
-
-  async function disableDefaultCard(rarity, text) {
-    if (!currentUser) return;
-    try {
-      const resp = await fetch(`${API_BASE}/api/default-cards/disable`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: currentUser.id, rarity, text })
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        alert(data.error || "隐藏失败");
-        return;
-      }
-      await loadCardPool();
-    } catch (e) {
-      console.error(e);
-      alert("网络错误，请稍后重试");
-    }
-  }
-
-  async function enableDefaultCard(rarity, text) {
-    if (!currentUser) return;
-    try {
-      const resp = await fetch(`${API_BASE}/api/default-cards/enable`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: currentUser.id, rarity, text })
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        alert(data.error || "恢复失败");
-        return;
-      }
-      await loadCardPool();
-    } catch (e) {
-      console.error(e);
-      alert("网络错误，请稍后重试");
-    }
-  }
-
-  // ============ “最近抽卡请求”渲染（含同意按钮）===========
-  // ✅ 统一 truthy 处理：兼容 0/1、"0"/"1"、true/false
-  function truthy(v) {
-    if (v === true) return true;
-    if (v === false) return false;
-    if (v === 1 || v === "1") return true;
-    if (v === 0 || v === "0") return false;
-    // 其他：比如 null/undefined
-    return !!v;
-  }
-
-  function renderRequests(list) {
-    const el = document.getElementById("requestsList");
-    if (!el) return;
-
-    if (!list || list.length === 0) {
-      el.innerHTML = `<div class="empty-tip">暂无记录</div>`;
-      return;
-    }
-
-    el.innerHTML = list.map(dr => {
-      const isUsed = truthy(dr.used);
-      const bothOk = truthy(dr.requester_confirmed) && truthy(dr.partner_confirmed);
-
-      const status =
-        isUsed ? `<span class="status-badge red">已使用</span>` :
-        bothOk ? `<span class="status-badge green">双方已同意</span>` :
-        truthy(dr.requester_confirmed) ? `<span class="status-badge orange">等待对方同意</span>` :
-        `<span class="status-badge">未知</span>`;
-
-      // ✅ 更稳的可同意判断（兼容不同字段类型）
-      const canApprove = (
-        currentUser &&
-        String(dr.partner_id) === String(currentUser.id) &&
-        !truthy(dr.partner_confirmed) &&
-        !truthy(dr.used)
-      );
-
-      return `
-        <div class="list-item">
-          <div class="list-item-header">
-            <div>
-              <div class="list-item-title">${escapeHtml(dr.requester_name)} → ${escapeHtml(dr.partner_name)}</div>
-              <div class="list-item-meta">请求ID: ${dr.id}</div>
-            </div>
-            <div>${status}</div>
-          </div>
-
-          ${canApprove ? `
-            <div class="inline-actions">
-              <button class="btn small" onclick="approveRequest(${dr.id})">同意</button>
-            </div>
-          ` : ``}
-        </div>
-      `;
-    }).join("");
-  }
-
-  async function approveRequest(requestId) {
-    if (!currentUser) return;
-    try {
-      const resp = await fetch(`${API_BASE}/api/approve-draw`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: currentUser.id, requestId })
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        alert(data.error || "同意失败");
-        return;
-      }
-      alert("已同意！");
-      await loadStatus();
-    } catch (e) {
-      console.error(e);
-      alert("网络错误");
-    }
   }
 
   // ==================== 抽卡动效 =====================
