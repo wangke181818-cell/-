@@ -13,6 +13,9 @@
       --bg: #f5f5f7;
       --card-bg: #ffffff;
       --border-radius: 12px;
+      --danger: #c62828;
+      --success: #2e7d32;
+      --warn: #e65100;
     }
 
     * {
@@ -28,7 +31,7 @@
     }
 
     .app {
-      max-width: 900px;
+      max-width: 980px;
       margin: 0 auto;
       min-height: 100vh;
       display: flex;
@@ -42,48 +45,54 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 10px;
     }
 
     header .title {
       font-size: 18px;
-      font-weight: 600;
+      font-weight: 700;
+      letter-spacing: 0.5px;
     }
 
     header .user-info {
       font-size: 13px;
-      opacity: 0.9;
+      opacity: 0.92;
+      white-space: nowrap;
     }
 
     .btn {
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 10px 14px;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       background: var(--primary);
       color: #fff;
-      transition: background 0.15s ease, opacity 0.15s ease;
+      transition: opacity 0.15s ease, transform 0.05s ease;
     }
 
     .btn.secondary {
       background: #e0e3eb;
       color: #222;
+      font-weight: 600;
+    }
+
+    .btn.danger {
+      background: #ffe8ea;
+      color: var(--danger);
+      font-weight: 700;
     }
 
     .btn.small {
-      padding: 6px 10px;
+      padding: 7px 10px;
       font-size: 12px;
+      border-radius: 999px;
     }
 
-    .btn:hover {
-      opacity: 0.9;
-    }
-
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
+    .btn:hover { opacity: 0.92; }
+    .btn:active { transform: scale(0.99); }
+    .btn:disabled { opacity: 0.5; cursor: default; }
 
     main {
       flex: 1;
@@ -95,29 +104,30 @@
       border-radius: var(--border-radius);
       padding: 16px;
       margin-bottom: 12px;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
     }
 
     .card-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
+      gap: 10px;
       margin-bottom: 10px;
     }
 
     .card-title {
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 800;
     }
 
     .card-sub {
       font-size: 12px;
       color: var(--text-sub);
+      margin-top: 3px;
+      line-height: 1.4;
     }
 
-    .form-group {
-      margin-bottom: 12px;
-    }
+    .form-group { margin-bottom: 12px; }
 
     label {
       display: block;
@@ -128,9 +138,9 @@
 
     input, select, textarea {
       width: 100%;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid #d3d7e3;
-      padding: 8px 10px;
+      padding: 9px 10px;
       font-size: 14px;
       outline: none;
       transition: border 0.15s ease, box-shadow 0.15s ease;
@@ -139,168 +149,131 @@
 
     input:focus, select:focus, textarea:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 1px rgba(41, 82, 204, 0.2);
+      box-shadow: 0 0 0 2px rgba(41, 82, 204, 0.12);
     }
 
-    textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
+    textarea { resize: vertical; min-height: 70px; }
 
     .text-muted {
       font-size: 12px;
       color: var(--text-sub);
-      margin-top: 4px;
+      margin-top: 6px;
+      line-height: 1.4;
     }
 
     .tag {
       display: inline-block;
-      padding: 2px 6px;
+      padding: 2px 8px;
       border-radius: 999px;
       font-size: 11px;
-      margin-right: 4px;
+      margin-right: 6px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      vertical-align: middle;
     }
 
-    .tag-SSR {
-      background: #ffe6f1;
-      color: #c2185b;
-    }
-    .tag-SR {
-      background: #e3f2fd;
-      color: #1565c0;
-    }
-    .tag-R {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
-    .tag-N {
-      background: #f5f5f5;
-      color: #555;
-    }
+    .tag-SSR { background: #ffe6f1; color: #c2185b; }
+    .tag-SR  { background: #e3f2fd; color: #1565c0; }
+    .tag-R   { background: #e8f5e9; color: #2e7d32; }
+    .tag-N   { background: #f3f4f6; color: #555; }
 
     .pill {
       background: var(--primary-light);
       color: var(--primary);
       border-radius: 999px;
-      padding: 4px 10px;
+      padding: 6px 10px;
       font-size: 12px;
       display: inline-flex;
       align-items: center;
+      gap: 6px;
       margin-right: 8px;
-      margin-top: 4px;
-    }
-
-    .pill-label {
-      font-weight: 500;
-      margin-right: 4px;
+      margin-top: 6px;
+      font-weight: 700;
     }
 
     .app-subnav {
       display: flex;
       overflow-x: auto;
-      padding: 6px 8px 4px;
-      gap: 6px;
+      padding: 8px;
+      gap: 8px;
       background: #f0f2f7;
       border-bottom: 1px solid #d8deea;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .subnav-btn {
-      flex: 1;
+      flex: 0 0 auto;
       white-space: nowrap;
       font-size: 12px;
-      padding: 8px 10px;
+      padding: 9px 12px;
       border-radius: 999px;
       border: none;
       background: transparent;
       color: var(--text-sub);
       cursor: pointer;
+      font-weight: 700;
     }
 
     .subnav-btn.active {
       background: #ffffff;
       color: var(--primary);
-      font-weight: 600;
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+      box-shadow: 0 1px 6px rgba(15, 23, 42, 0.12);
     }
 
-    .panel {
-      display: none;
-    }
+    .panel { display: none; }
+    .panel.active { display: block; }
 
-    .panel.active {
-      display: block;
-    }
-
-    .list {
-      margin-top: 6px;
-    }
-
+    .list { margin-top: 6px; }
     .list-item {
-      padding: 8px 0;
+      padding: 10px 0;
       border-bottom: 1px solid #f0f2f5;
       font-size: 13px;
     }
-
-    .list-item:last-child {
-      border-bottom: none;
-    }
+    .list-item:last-child { border-bottom: none; }
 
     .list-item-header {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 4px;
+      gap: 10px;
+      margin-bottom: 6px;
+      align-items: center;
     }
 
-    .list-item-title {
-      font-weight: 500;
-    }
-
-    .list-item-meta {
-      font-size: 12px;
-      color: var(--text-sub);
-    }
+    .list-item-title { font-weight: 800; }
+    .list-item-meta { font-size: 12px; color: var(--text-sub); }
 
     .inline-actions {
-      margin-top: 6px;
+      margin-top: 8px;
       display: flex;
-      gap: 6px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
     .status-badge {
       display: inline-block;
       font-size: 11px;
-      padding: 2px 6px;
+      padding: 3px 8px;
       border-radius: 999px;
       background: #f3f4f6;
       color: #555;
+      font-weight: 800;
+      letter-spacing: 0.2px;
     }
 
-    .status-badge.green {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
-
-    .status-badge.orange {
-      background: #fff3e0;
-      color: #e65100;
-    }
-
-    .status-badge.red {
-      background: #ffebee;
-      color: #c62828;
-    }
+    .status-badge.green { background: #e8f5e9; color: var(--success); }
+    .status-badge.orange { background: #fff3e0; color: var(--warn); }
+    .status-badge.red { background: #ffebee; color: var(--danger); }
 
     .empty-tip {
       font-size: 13px;
       color: var(--text-sub);
-      margin-top: 4px;
+      margin-top: 8px;
+      line-height: 1.5;
     }
 
-    .card-layout-2 {
-      display: block;
-    }
-
+    .card-layout-2 { display: block; }
     @media (min-width: 720px) {
       .card-layout-2 {
         display: grid;
@@ -308,18 +281,39 @@
         gap: 12px;
       }
     }
+
+    /* 卡库控制栏（下半部分会接上具体逻辑） */
+    .pool-toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-sub);
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f3f4f6;
+    }
+
+    .switch input { width: auto; }
   </style>
 </head>
+
 <body>
 <div class="app">
   <header class="app-header">
     <div class="title">情侣抽卡系统</div>
-    <div class="user-info" id="headerUserInfo">
-      未登录
-    </div>
+    <div class="user-info" id="headerUserInfo">未登录</div>
   </header>
 
-  <!-- 直接主视图（不再有 H5 登录页） -->
   <div id="view-main" style="display:flex; flex:1; flex-direction:column;">
     <nav class="app-subnav">
       <button class="subnav-btn active" data-target="panel-overview">概览</button>
@@ -333,9 +327,7 @@
     <main>
       <!-- 概览 -->
       <section id="panel-overview" class="panel active">
-        <div class="card card-layout-2" id="overviewContainer">
-          <!-- 这里在 JS 初始化时填充 -->
-        </div>
+        <div class="card card-layout-2" id="overviewContainer"></div>
 
         <div class="card">
           <div class="card-header">
@@ -353,23 +345,31 @@
       <section id="panel-draw" class="panel">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">发起 / 同意抽卡</div>
+            <div>
+              <div class="card-title">发起 / 同意抽卡</div>
+              <div class="card-sub">抽卡前需要绑定对象。一方申请，另一方同意。</div>
+            </div>
           </div>
+
           <div class="form-group">
             <label>当前绑定对象</label>
             <select id="drawPartnerSelect"></select>
-            <div class="text-muted">抽卡前需要先绑定对方，并由一方发起申请，另一方同意。</div>
           </div>
+
           <div class="inline-actions">
             <button class="btn" onclick="requestDraw()">向当前对象发起抽卡申请</button>
             <button class="btn secondary" onclick="approveFirstPending()">同意一条待处理申请</button>
           </div>
-          <div class="text-muted" id="drawMessage" style="margin-top:8px;"></div>
+
+          <div class="text-muted" id="drawMessage" style="margin-top:10px;"></div>
         </div>
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">抽卡</div>
+            <div>
+              <div class="card-title">抽卡</div>
+              <div class="card-sub">仅当存在“双方已同意且未使用”的申请时可抽。</div>
+            </div>
           </div>
           <button class="btn" onclick="drawCard()">开始抽卡</button>
           <div id="drawResult" style="margin-top:12px;"></div>
@@ -380,7 +380,10 @@
       <section id="panel-my-cards" class="panel">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">我的卡片</div>
+            <div>
+              <div class="card-title">我的卡片</div>
+              <div class="card-sub">未使用的卡会排在前面。</div>
+            </div>
             <button class="btn small secondary" onclick="loadMyCards()">刷新</button>
           </div>
           <div id="myCardsList" class="list"></div>
@@ -391,7 +394,10 @@
       <section id="panel-partner-cards" class="panel">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Ta 的卡片</div>
+            <div>
+              <div class="card-title">Ta 的卡片</div>
+              <div class="card-sub">只能查看已绑定对象。</div>
+            </div>
           </div>
 
           <div class="form-group">
@@ -400,7 +406,7 @@
           </div>
 
           <button class="btn small" onclick="loadPartnerCards()">查看 Ta 的卡片</button>
-          <div id="partnerCardsList" class="list" style="margin-top:8px;"></div>
+          <div id="partnerCardsList" class="list" style="margin-top:10px;"></div>
         </div>
       </section>
 
@@ -408,10 +414,24 @@
       <section id="panel-card-pool" class="panel">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">卡库一览</div>
+            <div>
+              <div class="card-title">卡库一览（可管理默认卡）</div>
+              <div class="card-sub">你可以把“不想再出现”的系统默认卡隐藏掉（只对你生效）。</div>
+            </div>
             <button class="btn small secondary" onclick="loadCardPool()">刷新</button>
           </div>
-          <div id="cardPoolContent"></div>
+
+          <!-- 下半部分会接上具体逻辑：搜索、显示隐藏卡、隐藏/恢复按钮等 -->
+          <div class="pool-toolbar">
+            <input id="poolSearchInput" placeholder="搜索卡片内容（支持模糊匹配）" />
+            <label class="switch">
+              <input type="checkbox" id="poolShowDisabled" />
+              显示我隐藏的默认卡
+            </label>
+            <button class="btn small secondary" onclick="clearPoolSearch()">清空搜索</button>
+          </div>
+
+          <div id="cardPoolContent" style="margin-top:10px;"></div>
         </div>
       </section>
 
@@ -419,8 +439,12 @@
       <section id="panel-custom-cards" class="panel">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">新增自定义卡</div>
+            <div>
+              <div class="card-title">新增自定义卡</div>
+              <div class="card-sub">自定义卡会加入你和绑定对象共享的卡池（双方都可能抽到）。</div>
+            </div>
           </div>
+
           <div class="form-group">
             <label for="customRarity">稀有度</label>
             <select id="customRarity">
@@ -430,17 +454,22 @@
               <option value="N">N</option>
             </select>
           </div>
+
           <div class="form-group">
             <label for="customText">卡片内容</label>
             <textarea id="customText" placeholder="例如：下次见面我请你喝咖啡"></textarea>
           </div>
+
           <button class="btn" onclick="addCustomCard()">添加到卡库</button>
-          <div class="text-muted" id="customAddMessage" style="margin-top:6px;"></div>
+          <div class="text-muted" id="customAddMessage" style="margin-top:8px;"></div>
         </div>
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">我的自定义卡</div>
+            <div>
+              <div class="card-title">我的自定义卡</div>
+              <div class="card-sub">可从卡库移除（软删除），移除后不会再被抽到。</div>
+            </div>
             <button class="btn small secondary" onclick="loadCustomCards()">刷新</button>
           </div>
           <div id="customCardsList" class="list"></div>
@@ -455,6 +484,15 @@
   let currentUser = null;
   let partnersCache = [];
   let requestsCache = [];
+
+  // 卡库管理相关（下半部分会补齐）
+  let cardPoolCache = null;
+  let disabledDefaultCache = []; // 我隐藏的默认卡列表（从后端拿）
+  function clearPoolSearch() {
+    const el = document.getElementById("poolSearchInput");
+    if (el) el.value = "";
+    loadCardPool();
+  }
 
   function getQueryParam(key) {
     const params = new URLSearchParams(window.location.search);
@@ -480,28 +518,34 @@
         <div class="card-header">
           <div class="card-title">我的信息</div>
         </div>
-        <div style="font-size:14px; line-height:1.6;">
+        <div style="font-size:14px; line-height:1.8;">
           <div><strong>昵称：</strong><span id="overviewName">${currentUser.name}</span></div>
           <div><strong>总抽卡次数：</strong><span id="overviewDrawCount">${currentUser.draw_count}</span></div>
         </div>
         <div class="text-muted" style="margin-top:8px;">
-          登录是在 App 完成的，本页面仅用于展示和操作抽卡功能。
+          本页面由 App 打开并自动带入 userId 参数。
         </div>
       </div>
 
       <div>
         <div class="card-header">
-          <div class="card-title">已绑定对象</div>
+          <div>
+            <div class="card-title">已绑定对象</div>
+            <div class="card-sub">你可以绑定多个对象（列表展示）。</div>
+          </div>
           <button class="btn small secondary" onclick="refreshPartners()">刷新</button>
         </div>
+
         <div id="partnersList" class="list"></div>
 
-        <div class="form-group" style="margin-top:8px;">
+        <div class="form-group" style="margin-top:10px;">
           <label for="bindName">绑定新对象昵称</label>
           <input id="bindName" type="text" placeholder="对方需要先登录过一次" />
+          <div class="text-muted">绑定后，你们的自定义卡会合并进入同一卡池。</div>
         </div>
+
         <button class="btn small" onclick="bindPartner()">绑定</button>
-        <div class="text-muted" id="bindMessage" style="margin-top:4px;"></div>
+        <div class="text-muted" id="bindMessage" style="margin-top:6px;"></div>
       </div>
     `;
 
@@ -517,21 +561,28 @@
   document.addEventListener("DOMContentLoaded", async () => {
     const userIdStr = getQueryParam("userId");
 
+    // 顶部子导航切换
     document.querySelectorAll(".subnav-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const target = btn.getAttribute("data-target");
         document.querySelectorAll(".subnav-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
         document.getElementById(target).classList.add("active");
+
+        // 进入卡库页面时可自动刷新（可选）
+        if (target === "panel-card-pool") {
+          await loadCardPool();
+        }
       });
     });
 
+    // 未带 userId
     if (!userIdStr) {
       document.getElementById("overviewContainer").innerHTML = `
         <div class="card" style="grid-column: 1 / -1;">
           <div class="card-title">未登录</div>
-          <p style="margin-top:8px; font-size:14px; color:#666;">
+          <p style="margin-top:8px; font-size:14px; color:#666; line-height:1.6;">
             请通过手机 App 登录后打开本页面，本页面不提供单独登录入口。
           </p>
         </div>
@@ -544,7 +595,7 @@
       document.getElementById("overviewContainer").innerHTML = `
         <div class="card" style="grid-column: 1 / -1;">
           <div class="card-title">参数错误</div>
-          <p style="margin-top:8px; font-size:14px; color:#666;">
+          <p style="margin-top:8px; font-size:14px; color:#666; line-height:1.6;">
             userId 参数无效，请从 App 重新打开。
           </p>
         </div>
@@ -559,7 +610,7 @@
         document.getElementById("overviewContainer").innerHTML = `
           <div class="card" style="grid-column: 1 / -1;">
             <div class="card-title">登录失效</div>
-            <p style="margin-top:8px; font-size:14px; color:#666;">
+            <p style="margin-top:8px; font-size:14px; color:#666; line-height:1.6;">
               ${data.error || "无法获取登录状态，请重新从 App 登录。"}
             </p>
           </div>
@@ -575,7 +626,7 @@
       document.getElementById("overviewContainer").innerHTML = `
         <div class="card" style="grid-column: 1 / -1;">
           <div class="card-title">网络错误</div>
-          <p style="margin-top:8px; font-size:14px; color:#666;">
+          <p style="margin-top:8px; font-size:14px; color:#666; line-height:1.6;">
             无法连接服务器，请检查网络后重新打开 App。
           </p>
         </div>
@@ -583,21 +634,21 @@
     }
   });
 
-  // ======== 合作对象 / 状态 ========
+  // ======== 绑定对象 / 状态 ========
 
   async function refreshPartners() {
     if (!currentUser) return;
-    const userId = currentUser.id;
     const listEl = document.getElementById("partnersList");
     listEl.innerHTML = "加载中…";
 
     try {
-      const resp = await fetch(`${API_BASE}/api/partners?userId=${userId}`);
+      const resp = await fetch(`${API_BASE}/api/partners?userId=${currentUser.id}`);
       const data = await resp.json();
       if (!resp.ok) {
         listEl.innerHTML = `<div class="empty-tip">${data.error || "加载失败"}</div>`;
         return;
       }
+
       partnersCache = data.partners || [];
 
       if (!partnersCache.length) {
@@ -613,6 +664,7 @@
         `).join("");
       }
 
+      // 刷新两个 select
       const drawSelect = document.getElementById("drawPartnerSelect");
       const partnerSelect = document.getElementById("partnerCardsSelect");
       drawSelect.innerHTML = "";
@@ -637,7 +689,6 @@
           partnerSelect.appendChild(opt2);
         });
       }
-
     } catch (e) {
       console.error(e);
       listEl.innerHTML = `<div class="empty-tip">网络错误，稍后重试。</div>`;
@@ -668,7 +719,8 @@
       }
       msgEl.innerText = data.message || "绑定成功";
       document.getElementById("bindName").value = "";
-      refreshPartners();
+      await refreshPartners();
+      await loadCardPool();
     } catch (e) {
       console.error(e);
       msgEl.innerText = "网络错误，请稍后重试";
@@ -690,7 +742,10 @@
 
       requestsCache = data.requests || [];
       currentUser.draw_count = data.user.draw_count;
-      document.getElementById("overviewDrawCount").innerText = data.user.draw_count;
+
+      const drawCountEl = document.getElementById("overviewDrawCount");
+      if (drawCountEl) drawCountEl.innerText = data.user.draw_count;
+
       setHeaderUserInfo();
 
       if (!requestsCache.length) {
@@ -701,6 +756,7 @@
       listEl.innerHTML = requestsCache.map(r => {
         const isRequester = r.requester_id === currentUser.id;
         const who = isRequester ? "你发起的" : "对方向你发起的";
+
         let statusText = "";
         let statusClass = "status-badge";
 
@@ -718,9 +774,7 @@
         return `
           <div class="list-item">
             <div class="list-item-header">
-              <div class="list-item-title">
-                ${r.requester_name} ➝ ${r.partner_name}
-              </div>
+              <div class="list-item-title">${r.requester_name} ➝ ${r.partner_name}</div>
               <div class="${statusClass}">${statusText}</div>
             </div>
             <div class="list-item-meta">${who}</div>
@@ -763,7 +817,7 @@
         return;
       }
       msgEl.innerText = data.message || "申请已发送";
-      loadStatus();
+      await loadStatus();
     } catch (e) {
       console.error(e);
       msgEl.innerText = "网络错误，请稍后重试";
@@ -771,14 +825,18 @@
   }
 
   async function approveFirstPending() {
+    const msgEl = document.getElementById("drawMessage");
     if (!currentUser || !requestsCache.length) {
-      document.getElementById("drawMessage").innerText = "暂无可同意的申请";
+      msgEl.innerText = "暂无可同意的申请";
       return;
     }
 
-    const pending = requestsCache.find(r => !r.used && r.partner_id === currentUser.id && !r.partner_confirmed);
+    const pending = requestsCache.find(r =>
+      !r.used && r.partner_id === currentUser.id && !r.partner_confirmed
+    );
+
     if (!pending) {
-      document.getElementById("drawMessage").innerText = "当前没有需要你同意的申请";
+      msgEl.innerText = "当前没有需要你同意的申请";
       return;
     }
 
@@ -790,14 +848,14 @@
       });
       const data = await resp.json();
       if (!resp.ok) {
-        document.getElementById("drawMessage").innerText = data.error || "操作失败";
+        msgEl.innerText = data.error || "操作失败";
         return;
       }
-      document.getElementById("drawMessage").innerText = data.message || "已同意";
-      loadStatus();
+      msgEl.innerText = data.message || "已同意";
+      await loadStatus();
     } catch (e) {
       console.error(e);
-      document.getElementById("drawMessage").innerText = "网络错误，请稍后重试";
+      msgEl.innerText = "网络错误，请稍后重试";
     }
   }
 
@@ -820,23 +878,28 @@
 
       currentUser = data.user;
       setHeaderUserInfo();
-      document.getElementById("overviewDrawCount").innerText = data.user.draw_count;
+
+      const drawCountEl = document.getElementById("overviewDrawCount");
+      if (drawCountEl) drawCountEl.innerText = data.user.draw_count;
 
       const rarity = data.card.rarity;
       const text = data.card.text;
+
       resultEl.innerHTML = `
         <div class="card" style="margin-top:0;">
-          <div class="card-header">
+          <div class="card-header" style="align-items:center;">
             <div class="card-title">抽卡成功</div>
             <span class="tag tag-${rarity}">${rarity}</span>
           </div>
-          <div style="font-size:14px; line-height:1.6;">${text}</div>
+          <div style="font-size:14px; line-height:1.7;">${escapeHtml(text)}</div>
         </div>
       `;
 
-      loadMyCards();
-      loadStatus();
-      loadCardPool();
+      await Promise.all([
+        loadMyCards(),
+        loadStatus(),
+        loadCardPool()
+      ]);
     } catch (e) {
       console.error(e);
       resultEl.innerHTML = `<div class="empty-tip">网络错误，稍后重试。</div>`;
@@ -857,24 +920,24 @@
         listEl.innerHTML = `<div class="empty-tip">${data.error || "加载失败"}</div>`;
         return;
       }
+
       const cards = data.cards || [];
       if (!cards.length) {
         listEl.innerHTML = `<div class="empty-tip">你还没有抽到过卡。</div>`;
         return;
       }
+
       listEl.innerHTML = cards.map(c => `
         <div class="list-item">
           <div class="list-item-header">
-            <div>
-              <span class="tag tag-${c.rarity}">${c.rarity}</span>
-            </div>
+            <div><span class="tag tag-${c.rarity}">${c.rarity}</span></div>
             <div class="list-item-meta">${c.used ? "已使用" : "未使用"} · ${c.created_at}</div>
           </div>
-          <div style="font-size:14px; line-height:1.6;">${c.card_text}</div>
+          <div style="font-size:14px; line-height:1.7;">${escapeHtml(c.card_text)}</div>
           ${!c.used ? `
-          <div class="inline-actions">
-            <button class="btn small secondary" onclick="useCard(${c.id})">标记为已使用</button>
-          </div>` : ""}
+            <div class="inline-actions">
+              <button class="btn small secondary" onclick="useCard(${c.id})">标记为已使用</button>
+            </div>` : ""}
         </div>
       `).join("");
     } catch (e) {
@@ -896,7 +959,7 @@
         alert(data.error || "操作失败");
         return;
       }
-      loadMyCards();
+      await loadMyCards();
     } catch (e) {
       console.error(e);
       alert("网络错误，请稍后重试");
@@ -907,90 +970,44 @@
 
   async function loadPartnerCards() {
     if (!currentUser) return;
+    const listEl = document.getElementById("partnerCardsList");
+
     if (!partnersCache.length) {
-      document.getElementById("partnerCardsList").innerHTML =
-        `<div class="empty-tip">暂无绑定对象。</div>`;
+      listEl.innerHTML = `<div class="empty-tip">暂无绑定对象。</div>`;
       return;
     }
+
     const partnerId = document.getElementById("partnerCardsSelect").value;
     if (!partnerId) return;
 
-    const listEl = document.getElementById("partnerCardsList");
     listEl.innerHTML = "加载中…";
 
     try {
-      const resp = await fetch(
-        `${API_BASE}/api/partner-cards?userId=${currentUser.id}&partnerId=${partnerId}`
-      );
+      const resp = await fetch(`${API_BASE}/api/partner-cards?userId=${currentUser.id}&partnerId=${partnerId}`);
       const data = await resp.json();
       if (!resp.ok) {
         listEl.innerHTML = `<div class="empty-tip">${data.error || "加载失败"}</div>`;
         return;
       }
+
       const cards = data.cards || [];
       if (!cards.length) {
         listEl.innerHTML = `<div class="empty-tip">对方还没有抽到过卡。</div>`;
         return;
       }
+
       listEl.innerHTML = cards.map(c => `
         <div class="list-item">
           <div class="list-item-header">
             <div><span class="tag tag-${c.rarity}">${c.rarity}</span></div>
             <div class="list-item-meta">${c.used ? "已使用" : "未使用"} · ${c.created_at}</div>
           </div>
-          <div style="font-size:14px; line-height:1.6;">${c.card_text}</div>
+          <div style="font-size:14px; line-height:1.7;">${escapeHtml(c.card_text)}</div>
         </div>
       `).join("");
     } catch (e) {
       console.error(e);
       listEl.innerHTML = `<div class="empty-tip">网络错误，稍后重试。</div>`;
-    }
-  }
-
-  // ======== 卡库一览 ========
-
-  async function loadCardPool() {
-    if (!currentUser) return;
-    const container = document.getElementById("cardPoolContent");
-    container.innerHTML = "加载中…";
-
-    try {
-      const resp = await fetch(`${API_BASE}/api/card-pool?userId=${currentUser.id}`);
-      const data = await resp.json();
-      if (!resp.ok) {
-        container.innerHTML = `<div class="empty-tip">${data.error || "加载失败"}</div>`;
-        return;
-      }
-      const pool = data.pool || {};
-      const rarities = ["SSR", "SR", "R", "N"];
-
-      container.innerHTML = rarities.map(r => {
-        const list = pool[r] || [];
-        if (!list.length) {
-          return `
-            <div style="margin-bottom:12px;">
-              <div class="pill"><span class="pill-label">${r}</span>暂无卡片</div>
-            </div>
-          `;
-        }
-        return `
-          <div style="margin-bottom:12px;">
-            <div class="pill"><span class="pill-label">${r}</span>${list.length} 张</div>
-            <ul style="margin-top:6px; padding-left:18px; font-size:13px; color:#444;">
-              ${list.map(t => `<li style="margin-bottom:3px;">${t}</li>`).join("")}
-            </ul>
-          </div>
-        `;
-      }).join("");
-
-      container.innerHTML += `
-        <div class="text-muted">
-          说明：卡库由默认卡片 + 你和已绑定对象的自定义卡共同组成，你们双方都可以抽到这些卡。
-        </div>
-      `;
-    } catch (e) {
-      console.error(e);
-      container.innerHTML = `<div class="empty-tip">网络错误，稍后重试。</div>`;
     }
   }
 
@@ -1008,11 +1025,13 @@
         listEl.innerHTML = `<div class="empty-tip">${data.error || "加载失败"}</div>`;
         return;
       }
+
       const cards = data.cards || [];
       if (!cards.length) {
         listEl.innerHTML = `<div class="empty-tip">你还没有创建自定义卡。</div>`;
         return;
       }
+
       listEl.innerHTML = cards.map(c => `
         <div class="list-item">
           <div class="list-item-header">
@@ -1021,11 +1040,11 @@
               ${!c.enabled ? '<span class="status-badge red" style="margin-left:6px;">已禁用</span>' : ''}
             </div>
           </div>
-          <div style="font-size:14px; line-height:1.6;">${c.text}</div>
+          <div style="font-size:14px; line-height:1.7;">${escapeHtml(c.text)}</div>
           ${c.enabled ? `
-          <div class="inline-actions">
-            <button class="btn small secondary" onclick="deleteCustomCard(${c.id})">从卡库移除</button>
-          </div>` : ""}
+            <div class="inline-actions">
+              <button class="btn small danger" onclick="deleteCustomCard(${c.id})">从卡库移除</button>
+            </div>` : ""}
         </div>
       `).join("");
     } catch (e) {
@@ -1057,10 +1076,14 @@
         msgEl.innerText = data.error || "添加失败";
         return;
       }
+
       msgEl.innerText = data.message || "添加成功";
       document.getElementById("customText").value = "";
-      loadCustomCards();
-      loadCardPool();
+
+      await Promise.all([
+        loadCustomCards(),
+        loadCardPool()
+      ]);
     } catch (e) {
       console.error(e);
       msgEl.innerText = "网络错误，请稍后重试";
@@ -1082,13 +1105,53 @@
         alert(data.error || "删除失败");
         return;
       }
-      loadCustomCards();
-      loadCardPool();
+      await Promise.all([
+        loadCustomCards(),
+        loadCardPool()
+      ]);
     } catch (e) {
       console.error(e);
       alert("网络错误，请稍后重试");
     }
   }
+
+  // ======== 卡库一览（下半部分会完整实现） ========
+  async function loadCardPool() {
+    if (!currentUser) return;
+    const container = document.getElementById("cardPoolContent");
+    container.innerHTML = "加载中…";
+
+    try {
+      const resp = await fetch(`${API_BASE}/api/card-pool?userId=${currentUser.id}`);
+      const data = await resp.json();
+      if (!resp.ok) {
+        container.innerHTML = `<div class="empty-tip">${data.error || "加载失败"}</div>`;
+        return;
+      }
+
+      cardPoolCache = data.pool || {};
+      // 下半部分会：
+      // 1) 拉取我隐藏的默认卡列表 disabledDefaultCache
+      // 2) 支持搜索/按稀有度折叠
+      // 3) 每条默认卡增加【隐藏】按钮；隐藏列表里增加【恢复】按钮
+      container.innerHTML = `<div class="empty-tip">卡库渲染与“隐藏默认卡/恢复默认卡”功能在下半部分代码中补齐。</div>`;
+    } catch (e) {
+      console.error(e);
+      container.innerHTML = `<div class="empty-tip">网络错误，稍后重试。</div>`;
+    }
+  }
+
+  // ======== 安全：防 XSS 输出 ========
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return "";
+    return String(str)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 </script>
+
 </body>
 </html>
