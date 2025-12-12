@@ -1,3 +1,5 @@
+const multer = require("multer");
+const fs = require("fs");
 const express = require("express");
 const cors = require("cors");
 const Database = require("better-sqlite3");
@@ -8,6 +10,14 @@ const multer = require("multer");
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
+const UPLOAD_DIR = path.join(__dirname, "uploads");
+
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR);
+}
+
+// 允许通过 /uploads/xxx.jpg 访问头像
+app.use("/uploads", express.static(UPLOAD_DIR));
 
 // ===== 静态资源（public/index.html） =====
 const STATIC_DIR = path.join(__dirname, "public");
@@ -273,6 +283,28 @@ function drawCardForUser(userId) {
   const index = Math.floor(Math.random() * list.length);
   return { rarity, text: list[index] };
 }
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, UPLOAD_DIR);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const name = "avatar_" + Date.now() + ext;
+    cb(null, name);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      cb(new Error("只能上传图片"));
+    } else {
+      cb(null, true);
+    }
+  }
+});
 
 // ========== ✅ 头像上传（multer）==========
 const storage = multer.diskStorage({
@@ -381,6 +413,26 @@ app.post("/api/profile/avatar", (req, res) => {
 
   const updated = db.prepare("SELECT id, name, draw_count, avatar_url FROM users WHERE id = ?").get(userId);
   res.json({ message: "头像已更新", user: updated });
+});
+app.post("/api/profile/avatar/upload", upload.single("avatar"), (req, res) => {
+  const userId = Number(req.body.userId);
+  if (!userId || !req.file) {
+    return res.status(400).json({ error: "缺少 userId 或 文件" });
+  }
+
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+  if (!user) return res.status(404).json({ error: "用户不存在" });
+
+  const avatarUrl = `/uploads/${req.file.filename}`;
+
+  db.prepare(
+    "UPDATE users SET avatar_url = ? WHERE id = ?"
+  ).run(avatarUrl, userId);
+
+  res.json({
+    message: "头像上传成功",
+    avatar_url: avatarUrl
+  });
 });
 
 // 3.2 绑定对象（可绑定多个）
@@ -811,4 +863,5 @@ app.use((err, req, res, next) => {
 // ===== 启动 =====
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server running on port " + PORT));
+
 
