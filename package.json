@@ -3,15 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
-
+  "type": "commonjs",
   "scripts": {
-  "start": "node server.js"
-}
-
+    "start": "node server.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "better-sqlite3": "^12.5.0",
     "cors": "^2.8.5",
