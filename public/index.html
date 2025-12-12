@@ -18,7 +18,6 @@
       --warn: #e65100;
     }
 
-    
     * {
       box-sizing: border-box;
       margin: 0;
@@ -239,7 +238,7 @@
       background: #f0f2f7;
       border-bottom: 1px solid #d8deea;
       position: sticky;
-      top: 58px; /* header height-ish */
+      top: 58px;
       z-index: 10;
     }
 
@@ -624,9 +623,7 @@
               <div style="font-weight:900; font-size:16px;">抽卡结果</div>
               <button class="btn small secondary" onclick="closeGachaModal()">关闭</button>
             </div>
-            <div class="text-muted" style="margin-top:6px;">
-              SSR/SR/R/N
-            </div>
+            <div class="text-muted" style="margin-top:6px;">SSR/SR/R/N</div>
           </div>
 
           <div style="padding:14px 16px 18px;">
@@ -694,7 +691,6 @@
 
   function bindHeaderActions() {
     document.getElementById("btnLogoutH5").addEventListener("click", () => {
-      // 优先让 App 清掉 prefs
       if (window.Android && typeof window.Android.logout === "function") {
         window.Android.logout();
         return;
@@ -717,11 +713,9 @@
       }
 
       try {
-        // 立即本地预览
         const localUrl = URL.createObjectURL(file);
         setHeaderAvatar(localUrl);
 
-        // 上传到后端（需要你后端加：POST /api/avatar/upload）
         const fd = new FormData();
         fd.append("userId", String(currentUser.id));
         fd.append("avatar", file);
@@ -733,10 +727,9 @@
           return;
         }
 
-        // 服务器返回 avatarUrl / avatar_url 都行
         const avatarUrl = data.avatarUrl || data.avatar_url || (data.user && (data.user.avatarUrl || data.user.avatar_url));
         if (avatarUrl) setHeaderAvatar(avatarUrl + (avatarUrl.includes("?") ? "&" : "?") + "t=" + Date.now());
-        await loadUserProfile(); // 兜底刷新
+        await loadUserProfile();
       } catch (err) {
         console.error(err);
         alert("上传失败：网络错误");
@@ -845,7 +838,6 @@
 
   async function loadUserProfile() {
     if (!currentUser) return;
-    // 需要后端提供：GET /api/user-profile?userId=xx
     try {
       const resp = await fetch(`${API_BASE}/api/user-profile?userId=${currentUser.id}`);
       const data = await resp.json().catch(() => ({}));
@@ -861,7 +853,6 @@
         }
       }
     } catch (e) {}
-    // 没有后端也没关系：用默认
     setHeaderAvatar(DEFAULT_AVATAR_SVG);
     const ov = document.getElementById("overviewAvatar");
     if (ov) ov.src = DEFAULT_AVATAR_SVG;
@@ -869,6 +860,14 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     bindHeaderActions();
+
+    // ✅ 弹层点击关闭绑定（独立执行，不依赖 try/catch）
+    const modal = document.getElementById("gachaModal");
+    const card = document.getElementById("gachaModalCard");
+    if (modal && card) {
+      modal.addEventListener("click", closeGachaModal);
+      card.addEventListener("click", e => e.stopPropagation());
+    }
 
     const userIdStr = getQueryParam("userId");
 
@@ -955,13 +954,6 @@
       `;
       setHeaderAvatar(DEFAULT_AVATAR_SVG);
     }
-      const modal = document.getElementById("gachaModal");
-  const card = document.getElementById("gachaModalCard");
-
-  if (modal && card) {
-    modal.addEventListener("click", closeGachaModal);
-    card.addEventListener("click", e => e.stopPropagation());
-  }
   });
 
   // ======== 绑定对象 / 状态 ========
@@ -1055,6 +1047,7 @@
     }
   }
 
+  // ✅ 修复点：loadStatus 只渲染一次（renderRequests），不要再覆盖 innerHTML
   async function loadStatus() {
     if (!currentUser) return;
     const listEl = document.getElementById("requestsList");
@@ -1069,47 +1062,14 @@
       }
 
       requestsCache = data.requests || [];
-      renderRequests(requestsCache);
       currentUser.draw_count = data.user.draw_count;
 
       const drawCountEl = document.getElementById("overviewDrawCount");
       if (drawCountEl) drawCountEl.innerText = data.user.draw_count;
-
       setHeaderUserInfo();
 
-      if (!requestsCache.length) {
-        listEl.innerHTML = `<div class="empty-tip">暂无抽卡申请记录。</div>`;
-        return;
-      }
-
-      listEl.innerHTML = requestsCache.map(r => {
-        const isRequester = r.requester_id === currentUser.id;
-        const who = isRequester ? "你发起的" : "对方向你发起的";
-
-        let statusText = "";
-        let statusClass = "status-badge";
-
-        if (r.used) {
-          statusText = "已抽卡";
-          statusClass += " green";
-        } else if (r.requester_confirmed && r.partner_confirmed) {
-          statusText = "双方已同意，可抽卡";
-          statusClass += " green";
-        } else if (!r.partner_confirmed && !r.used) {
-          statusText = isRequester ? "等待对方同意" : "等待你同意";
-          statusClass += " orange";
-        }
-
-        return `
-          <div class="list-item">
-            <div class="list-item-header">
-              <div class="list-item-title">${escapeHtml(r.requester_name)} ➝ ${escapeHtml(r.partner_name)}</div>
-              <div class="${statusClass}">${statusText}</div>
-            </div>
-            <div class="list-item-meta">${who}</div>
-          </div>
-        `;
-      }).join("");
+      // ✅ 统一渲染（含“同意”按钮）
+      renderRequests(requestsCache);
     } catch (e) {
       console.error(e);
       listEl.innerHTML = `<div class="empty-tip">网络错误，稍后重试。</div>`;
@@ -1154,7 +1114,7 @@
     }
 
     const pending = requestsCache.find(r =>
-      !r.used && r.partner_id === currentUser.id && !r.partner_confirmed
+      !truthy(r.used) && String(r.partner_id) === String(currentUser.id) && !truthy(r.partner_confirmed)
     );
 
     if (!pending) {
@@ -1186,13 +1146,12 @@
     const resultEl = document.getElementById("drawResult");
     resultEl.innerHTML = "抽卡中…";
 
-    // 打开弹层（先显示“抽卡中…”）
     openGachaModal();
     setGachaTheme("N");
     setRarityBadge("?");
     setGachaText("抽卡中…");
     playGachaShine();
-    boomFX("N"); // 先轻微动效
+    boomFX("N");
 
     try {
       const resp = await fetch(`${API_BASE}/api/draw`, {
@@ -1216,7 +1175,6 @@
       const rarity = data.card.rarity;
       const text = data.card.text;
 
-      // 更炸的弹层展示
       showGachaModal(rarity, text);
 
       resultEl.innerHTML = `
@@ -1265,10 +1223,10 @@
         <div class="list-item">
           <div class="list-item-header">
             <div><span class="tag tag-${c.rarity}">${c.rarity}</span></div>
-            <div class="list-item-meta">${c.used ? "已使用" : "未使用"} · ${escapeHtml(c.created_at)}</div>
+            <div class="list-item-meta">${truthy(c.used) ? "已使用" : "未使用"} · ${escapeHtml(c.created_at)}</div>
           </div>
           <div style="font-size:14px; line-height:1.7;">${escapeHtml(c.card_text)}</div>
-          ${!c.used ? `
+          ${!truthy(c.used) ? `
             <div class="inline-actions">
               <button class="btn small secondary" onclick="useCard(${c.id})">标记为已使用</button>
             </div>` : ""}
@@ -1333,7 +1291,7 @@
         <div class="list-item">
           <div class="list-item-header">
             <div><span class="tag tag-${c.rarity}">${c.rarity}</span></div>
-            <div class="list-item-meta">${c.used ? "已使用" : "未使用"} · ${escapeHtml(c.created_at)}</div>
+            <div class="list-item-meta">${truthy(c.used) ? "已使用" : "未使用"} · ${escapeHtml(c.created_at)}</div>
           </div>
           <div style="font-size:14px; line-height:1.7;">${escapeHtml(c.card_text)}</div>
         </div>
@@ -1369,11 +1327,11 @@
           <div class="list-item-header">
             <div>
               <span class="tag tag-${c.rarity}">${c.rarity}</span>
-              ${!c.enabled ? '<span class="status-badge red" style="margin-left:6px;">已禁用</span>' : ''}
+              ${!truthy(c.enabled) ? '<span class="status-badge red" style="margin-left:6px;">已禁用</span>' : ''}
             </div>
           </div>
           <div style="font-size:14px; line-height:1.7;">${escapeHtml(c.text)}</div>
-          ${c.enabled ? `
+          ${truthy(c.enabled) ? `
             <div class="inline-actions">
               <button class="btn small danger" onclick="deleteCustomCard(${c.id})">从卡库移除</button>
             </div>` : ""}
@@ -1441,7 +1399,7 @@
     }
   }
 
-  // ======== 卡库一览：完整实现 ========
+  // ======== 卡库一览 ========
   async function loadCardPool() {
     if (!currentUser) return;
     const container = document.getElementById("cardPoolContent");
@@ -1479,15 +1437,11 @@
     for (const rarity of rarityOrder) {
       const arr = (cardPoolCache[rarity] || []).slice();
 
-      // 过滤：搜索 + 是否显示隐藏默认卡
       const filtered = arr.filter(item => {
         const text = (item.text || "").toLowerCase();
         if (q && !text.includes(q)) return false;
 
-        // 默认卡：隐藏时是否显示
-        if (item.type === "default" && item.disabled && !showDisabled) return false;
-
-        // 自定义卡：enabled=0 也可以显示，但用 badge 标注
+        if (item.type === "default" && truthy(item.disabled) && !showDisabled) return false;
         return true;
       });
 
@@ -1521,7 +1475,7 @@
     const type = item.type;
 
     if (type === "default") {
-      const disabled = !!item.disabled;
+      const disabled = truthy(item.disabled);
       return `
         <div class="list-item">
           <div class="list-item-header">
@@ -1541,10 +1495,9 @@
       `;
     }
 
-    // custom
-    const enabled = !!item.enabled;
+    const enabled = truthy(item.enabled);
     const owner = escapeHtml(item.owner_name || "未知");
-    const ownerTag = item.is_self ? "我创建的" : `Ta 创建的：${owner}`;
+    const ownerTag = truthy(item.is_self) ? "我创建的" : `Ta 创建的：${owner}`;
 
     return `
       <div class="list-item">
@@ -1609,7 +1562,86 @@
     }
   }
 
-  // ==================== 抽卡动效（更炸）====================
+  // ============ “最近抽卡请求”渲染（含同意按钮）===========
+  // ✅ 统一 truthy 处理：兼容 0/1、"0"/"1"、true/false
+  function truthy(v) {
+    if (v === true) return true;
+    if (v === false) return false;
+    if (v === 1 || v === "1") return true;
+    if (v === 0 || v === "0") return false;
+    // 其他：比如 null/undefined
+    return !!v;
+  }
+
+  function renderRequests(list) {
+    const el = document.getElementById("requestsList");
+    if (!el) return;
+
+    if (!list || list.length === 0) {
+      el.innerHTML = `<div class="empty-tip">暂无记录</div>`;
+      return;
+    }
+
+    el.innerHTML = list.map(dr => {
+      const isUsed = truthy(dr.used);
+      const bothOk = truthy(dr.requester_confirmed) && truthy(dr.partner_confirmed);
+
+      const status =
+        isUsed ? `<span class="status-badge red">已使用</span>` :
+        bothOk ? `<span class="status-badge green">双方已同意</span>` :
+        truthy(dr.requester_confirmed) ? `<span class="status-badge orange">等待对方同意</span>` :
+        `<span class="status-badge">未知</span>`;
+
+      // ✅ 更稳的可同意判断（兼容不同字段类型）
+      const canApprove = (
+        currentUser &&
+        String(dr.partner_id) === String(currentUser.id) &&
+        !truthy(dr.partner_confirmed) &&
+        !truthy(dr.used)
+      );
+
+      return `
+        <div class="list-item">
+          <div class="list-item-header">
+            <div>
+              <div class="list-item-title">${escapeHtml(dr.requester_name)} → ${escapeHtml(dr.partner_name)}</div>
+              <div class="list-item-meta">请求ID: ${dr.id}</div>
+            </div>
+            <div>${status}</div>
+          </div>
+
+          ${canApprove ? `
+            <div class="inline-actions">
+              <button class="btn small" onclick="approveRequest(${dr.id})">同意</button>
+            </div>
+          ` : ``}
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function approveRequest(requestId) {
+    if (!currentUser) return;
+    try {
+      const resp = await fetch(`${API_BASE}/api/approve-draw`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUser.id, requestId })
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        alert(data.error || "同意失败");
+        return;
+      }
+      alert("已同意！");
+      await loadStatus();
+    } catch (e) {
+      console.error(e);
+      alert("网络错误");
+    }
+  }
+
+  // ==================== 抽卡动效 =====================
   function openGachaModal() {
     const modal = document.getElementById("gachaModal");
     const card = document.getElementById("gachaModalCard");
@@ -1617,14 +1649,13 @@
     card.style.animation = "gachaModalIn .22s ease-out forwards";
   }
 
- 
-function closeGachaModal() {
-  const modal = document.getElementById("gachaModal");
-  const card = document.getElementById("gachaModalCard");
-  if (!modal) return;
-  modal.style.display = "none";
-  if (card) card.style.animation = "none";
-}
+  function closeGachaModal() {
+    const modal = document.getElementById("gachaModal");
+    const card = document.getElementById("gachaModalCard");
+    if (!modal) return;
+    modal.style.display = "none";
+    if (card) card.style.animation = "none";
+  }
 
   function playGachaShine() {
     const shine = document.getElementById("shine");
@@ -1668,16 +1699,7 @@ function closeGachaModal() {
     setRarityBadge(rarity);
     setGachaText(text);
     playGachaShine();
-
-    // 更炸：SSR 抖 + 粒子 + 彩带，SR 粒子+少量彩带，R 轻粒子，N 轻微粒子
     boomFX(rarity);
-
-    // 如果 App 端做了震动桥，可以直接调用
-    try {
-      if (window.Android && typeof window.Android.toast === "function") {
-        // 这里不“暗中”做任何东西，只是展示
-      }
-    } catch (e) {}
   }
 
   function boomFX(rarity) {
@@ -1734,69 +1756,6 @@ function closeGachaModal() {
       layer.appendChild(s);
     }
   }
-function renderRequests(list) {
-  const el = document.getElementById("requestsList");
-  if (!el) return;
-
-  if (!list || list.length === 0) {
-    el.innerHTML = `<div class="empty-tip">暂无记录</div>`;
-    return;
-  }
-
-  el.innerHTML = list.map(dr => {
-    const status =
-      dr.used ? `<span class="status-badge red">已使用</span>` :
-      (dr.requester_confirmed && dr.partner_confirmed) ? `<span class="status-badge green">双方已同意</span>` :
-      dr.requester_confirmed ? `<span class="status-badge orange">等待对方同意</span>` :
-      `<span class="status-badge">未知</span>`;
-
-    const canApprove = (
-      currentUser &&
-      Number(dr.partner_id) === Number(currentUser.id) &&
-      Number(dr.partner_confirmed) === 0 &&
-      Number(dr.used) === 0
-    );
-
-    return `
-      <div class="list-item">
-        <div class="list-item-header">
-          <div>
-            <div class="list-item-title">${escapeHtml(dr.requester_name)} → ${escapeHtml(dr.partner_name)}</div>
-            <div class="list-item-meta">请求ID: ${dr.id}</div>
-          </div>
-          <div>${status}</div>
-        </div>
-
-        ${canApprove ? `
-          <div class="inline-actions">
-            <button class="btn small" onclick="approveRequest(${dr.id})">同意</button>
-          </div>
-        ` : ``}
-      </div>
-    `;
-  }).join("");
-}
-
-async function approveRequest(requestId) {
-  if (!currentUser) return;
-  try {
-    const resp = await fetch(`${API_BASE}/api/approve-draw`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: currentUser.id, requestId })
-    });
-    const data = await resp.json();
-    if (!resp.ok) {
-      alert(data.error || "同意失败");
-      return;
-    }
-    alert("已同意！");
-    await loadStatus();
-  } catch (e) {
-    console.error(e);
-    alert("网络错误");
-  }
-}
 
   function spawnConfetti(layer, n, rarity) {
     const w = layer.clientWidth || 480;
@@ -1815,8 +1774,6 @@ async function approveRequest(requestId) {
       layer.appendChild(c);
     }
   }
-  // ===========================================================
 </script>
-
 </body>
 </html>
