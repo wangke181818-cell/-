@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const Database = require("better-sqlite3");
 const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
 
 const app = express();
 app.use(cors());
@@ -10,6 +12,14 @@ app.use(express.json({ limit: "1mb" }));
 // ===== 静态资源（public/index.html） =====
 const STATIC_DIR = path.join(__dirname, "public");
 app.use(express.static(STATIC_DIR));
+
+// ✅ 头像上传目录（public/uploads/avatars）
+const UPLOADS_DIR = path.join(STATIC_DIR, "uploads");
+const AVATAR_DIR = path.join(UPLOADS_DIR, "avatars");
+fs.mkdirSync(AVATAR_DIR, { recursive: true });
+
+// ✅ 让 /uploads/... 可以直接访问
+app.use("/uploads", express.static(UPLOADS_DIR));
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(STATIC_DIR, "index.html"));
@@ -22,7 +32,7 @@ const updateInfo = {
   versionCode: 1,
   versionName: "1.0.0",
   apkUrl: "https://your-domain.com/path/to/your-apk.apk",
-  changelog: "首次发布版本"
+  changelog: "首次发布版本",
 };
 app.get("/update.json", (req, res) => res.json(updateInfo));
 
@@ -52,7 +62,7 @@ try {
   console.error("Check/Add password column failed:", e);
 }
 
-// ✅ 给 users 补 avatar_url 字段（头像：用 URL 字符串方式最稳）
+// ✅ 给 users 补 avatar_url 字段
 try {
   const cols = db.prepare("PRAGMA table_info(users)").all();
   const hasAvatar = cols.some((c) => c.name === "avatar_url");
@@ -135,7 +145,7 @@ const rarityRates = [
   { rarity: "SSR", rate: 0.05 },
   { rarity: "SR", rate: 0.20 },
   { rarity: "R", rate: 0.35 },
-  { rarity: "N", rate: 0.40 }
+  { rarity: "N", rate: 0.40 },
 ];
 
 const defaultCardPool = {
@@ -149,7 +159,7 @@ const defaultCardPool = {
     "出行规划卡：我负责查好下一次见面的路线 / 交通方案 / 时间安排",
     "代办差事卡：你最近不想做的一项小差事，我帮你代办（合理范围内）",
     "万能卡：你可以指定我执行卡池里任意一张实用卡（合理范围）",
-    "幸运卡：你可以从 SSR/SR 实用卡里任选一张，我必须执行一次"
+    "幸运卡：你可以从 SSR/SR 实用卡里任选一张，我必须执行一次",
   ],
   SR: [
     "奶茶/饮料卡：我帮你点一杯你喜欢的奶茶或饮料",
@@ -163,7 +173,7 @@ const defaultCardPool = {
     "过河拆桥卡：从你已抽到但未使用的一张普通卡中移除 1 张（不能动 SSR）",
     "无懈可击卡：免疫对方对你使用的一张卡（使用前可以先沟通好范围）",
     "逆转卡：对方对你使用的一张卡，反转成对方自己执行（不含 SSR 实用卡）",
-    "共享卡：将一张卡的效果变成两个人一起执行（例如一起自习、一起小出行）"
+    "共享卡：将一张卡的效果变成两个人一起执行（例如一起自习、一起小出行）",
   ],
   R: [
     "问题查询卡：你委托我查一个问题，我帮你查清楚（查资料 / 看攻略等）",
@@ -179,7 +189,7 @@ const defaultCardPool = {
     "偷看卡：可以偷看对方下一张抽到的卡内容",
     "重抽卡：让对方刚抽到的一张卡作废，必须重新抽一张",
     "禁用卡：让对方的一张未使用卡失效一次（不能是 SSR 卡）",
-    "延期卡：你可以把自己要执行的一张卡延后到下一次见面再执行"
+    "延期卡：你可以把自己要执行的一张卡延后到下一次见面再执行",
   ],
   N: [
     "餐馆推荐卡：帮你搜一个好吃、便宜、离你近的餐馆推荐",
@@ -189,8 +199,8 @@ const defaultCardPool = {
     "壁纸/头像推荐卡：帮你找一张适合你的壁纸或头像",
     "轻松放松卡：一起看一个约 5 分钟的搞笑 / 解压视频放松一下",
     "出行提醒卡：帮你查近期的天气并给简单出行建议（要不要带伞 / 外套等）",
-    "拍照卡：下次见面时我会专门给你拍一张好看的照片（由你挑一张）"
-  ]
+    "拍照卡：下次见面时我会专门给你拍一张好看的照片（由你挑一张）",
+  ],
 };
 
 function rollRarity() {
@@ -218,7 +228,6 @@ function getUserCardPoolForDraw(userId) {
   const pool = {};
   const rarities = Object.keys(defaultCardPool);
 
-  // 找出所有绑定对象（双向）
   const partners = db.prepare(`
     SELECT user_a_id AS id FROM couples WHERE user_b_id = ?
     UNION
@@ -227,7 +236,6 @@ function getUserCardPoolForDraw(userId) {
 
   partners.push(userId);
 
-  // 查用户隐藏的默认卡
   const disabledRows = db.prepare(`
     SELECT rarity, text
     FROM disabled_default_cards
@@ -266,6 +274,29 @@ function drawCardForUser(userId) {
   return { rarity, text: list[index] };
 }
 
+// ========== ✅ 头像上传（multer）==========
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, AVATAR_DIR),
+  filename: (req, file, cb) => {
+    const userId = String(req.body.userId || "0");
+    const ext = path.extname(file.originalname || "").toLowerCase() || ".png";
+    const safeExt = [".png", ".jpg", ".jpeg", ".webp"].includes(ext) ? ext : ".png";
+    cb(null, `u${userId}_${Date.now()}${safeExt}`);
+  },
+});
+
+function fileFilter(req, file, cb) {
+  const ok = ["image/png", "image/jpeg", "image/webp"].includes(file.mimetype);
+  if (!ok) return cb(new Error("只允许上传 png/jpg/webp 图片"));
+  cb(null, true);
+}
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+});
+
 // ===== 接口 =====
 
 // 3.1 登录 / 注册（带密码）
@@ -294,12 +325,46 @@ app.post("/api/login", (req, res) => {
       id: user.id,
       name: user.name,
       draw_count: user.draw_count,
-      avatar_url: user.avatar_url || ""
-    }
+      avatar_url: user.avatar_url || "",
+    },
   });
 });
 
-// ✅ 头像设置（先用 URL 字符串方式）
+// ✅ 用户资料（给 H5 用：GET /api/user-profile?userId=xx）
+app.get("/api/user-profile", (req, res) => {
+  const userId = Number(req.query.userId);
+  if (!userId) return res.status(400).json({ error: "缺少 userId" });
+
+  const user = db.prepare("SELECT id, name, draw_count, avatar_url FROM users WHERE id = ?").get(userId);
+  if (!user) return res.status(404).json({ error: "用户不存在" });
+
+  res.json({ user });
+});
+
+// ✅ 头像上传（给 H5 用：POST /api/avatar/upload  multipart）
+app.post("/api/avatar/upload", upload.single("avatar"), (req, res) => {
+  try {
+    const userId = Number(req.body.userId);
+    if (!userId) return res.status(400).json({ error: "缺少 userId" });
+
+    const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+    if (!user) return res.status(404).json({ error: "用户不存在" });
+
+    if (!req.file) return res.status(400).json({ error: "缺少 avatar 文件" });
+
+    // 保存为可访问 URL（相对路径即可）
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    db.prepare("UPDATE users SET avatar_url = ? WHERE id = ?").run(avatarUrl, userId);
+
+    const updated = db.prepare("SELECT id, name, draw_count, avatar_url FROM users WHERE id = ?").get(userId);
+    res.json({ message: "头像上传成功", avatar_url: avatarUrl, user: updated });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "上传失败" });
+  }
+});
+
+// ✅（保留）头像设置：直接传 URL
 app.post("/api/profile/avatar", (req, res) => {
   const { userId, avatarUrl } = req.body;
   if (!userId || typeof avatarUrl !== "string") {
@@ -308,7 +373,6 @@ app.post("/api/profile/avatar", (req, res) => {
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
   if (!user) return res.status(404).json({ error: "用户不存在" });
 
-  // 简单长度限制，防止塞超长字符串
   if (avatarUrl.length > 500) {
     return res.status(400).json({ error: "avatarUrl 太长" });
   }
@@ -349,8 +413,8 @@ app.post("/api/bind", (req, res) => {
       id: partner.id,
       name: partner.name,
       draw_count: partner.draw_count,
-      avatar_url: partner.avatar_url || ""
-    }
+      avatar_url: partner.avatar_url || "",
+    },
   });
 });
 
@@ -374,7 +438,7 @@ app.get("/api/status", (req, res) => {
 
   res.json({
     user: { id: user.id, name: user.name, draw_count: user.draw_count, avatar_url: user.avatar_url || "" },
-    requests
+    requests,
   });
 });
 
@@ -403,13 +467,28 @@ app.get("/api/partners", (req, res) => {
   res.json({ partners: Array.from(partnerMap.values()) });
 });
 
-// ✅ 3.4 申请抽卡（改进：必须传 partnerId，支持多绑定对象）
+// ✅ 3.4 申请抽卡（兼容：partnerId 可不传 -> 自动选第一个绑定对象）
 app.post("/api/request-draw", (req, res) => {
-  const { userId, partnerId } = req.body;
-  if (!userId || !partnerId) return res.status(400).json({ error: "缺少 userId 或 partnerId" });
+  let { userId, partnerId } = req.body;
+  if (!userId) return res.status(400).json({ error: "缺少 userId" });
+
+  userId = Number(userId);
+  partnerId = partnerId ? Number(partnerId) : null;
 
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
   if (!user) return res.status(404).json({ error: "用户不存在" });
+
+  // 未传 partnerId：自动选第一个绑定对象（兼容你旧前端）
+  if (!partnerId) {
+    const row = db.prepare(`
+      SELECT user_a_id AS pid FROM couples WHERE user_b_id = ?
+      UNION
+      SELECT user_b_id AS pid FROM couples WHERE user_a_id = ?
+      LIMIT 1
+    `).get(userId, userId);
+    if (!row) return res.status(400).json({ error: "你还没有绑定对象，不能发起抽卡申请" });
+    partnerId = row.pid;
+  }
 
   const partner = db.prepare("SELECT * FROM users WHERE id = ?").get(partnerId);
   if (!partner) return res.status(404).json({ error: "对方用户不存在" });
@@ -485,7 +564,7 @@ app.post("/api/draw", (req, res) => {
   res.json({
     message: "抽卡成功",
     card,
-    user: updatedUser
+    user: updatedUser,
   });
 });
 
@@ -633,7 +712,7 @@ app.get("/api/card-pool", (req, res) => {
         type: "default",
         rarity,
         text,
-        disabled: disabledSet.has(`${rarity}||${text}`)
+        disabled: disabledSet.has(`${rarity}||${text}`),
       });
     }
   }
@@ -660,7 +739,7 @@ app.get("/api/card-pool", (req, res) => {
         rarity: c.rarity,
         text: c.text,
         enabled: !!c.enabled,
-        is_self: c.user_id === userId
+        is_self: c.user_id === userId,
       });
     }
   }
@@ -706,7 +785,7 @@ app.post("/api/default-cards/enable", (req, res) => {
   res.json({ message: "已恢复该默认卡" });
 });
 
-// ✅（可选）拿到“我隐藏的默认卡列表”，前端要单独展示时用
+// ✅（可选）拿到“我隐藏的默认卡列表”
 app.get("/api/default-cards/disabled", (req, res) => {
   const userId = Number(req.query.userId);
   if (!userId) return res.status(400).json({ error: "缺少 userId" });
@@ -719,6 +798,14 @@ app.get("/api/default-cards/disabled", (req, res) => {
   `).all(userId);
 
   res.json({ disabled: rows });
+});
+
+// ✅ multer 错误兜底（比如上传超 2MB / 非图片）
+app.use((err, req, res, next) => {
+  if (!err) return next();
+  const msg = String(err.message || "上传失败");
+  if (msg.includes("File too large")) return res.status(400).json({ error: "图片太大（限制 2MB）" });
+  return res.status(400).json({ error: msg });
 });
 
 // ===== 启动 =====
