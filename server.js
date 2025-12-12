@@ -284,16 +284,7 @@ function drawCardForUser(userId) {
   const index = Math.floor(Math.random() * list.length);
   return { rarity, text: list[index] };
 }
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOAD_DIR);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const name = "avatar_" + Date.now() + ext;
-    cb(null, name);
-  }
-});
+
 
 const upload = multer({
   storage,
@@ -871,6 +862,7 @@ app.use((err, req, res, next) => {
 // ===== 启动 =====
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server running on port " + PORT));
+
 
 
 
